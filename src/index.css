@@ -1,0 +1,150 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@keyframes float {
+  0%, 100% {
+    transform: 
+      translate3d(0, 0, 0) 
+      rotate(0deg) 
+      scale(1);
+    opacity: var(--opacity-min, 0.3);
+  }
+  25% {
+    transform: 
+      translate3d(calc(var(--float-x, 10px) * 0.5), calc(var(--float-y, -15px) * 0.8), 0) 
+      rotate(90deg) 
+      scale(var(--scale-max, 1.1));
+    opacity: var(--opacity-max, 0.7);
+  }
+  50% {
+    transform: 
+      translate3d(calc(var(--float-x, -5px) * 0.8), calc(var(--float-y, -20px) * 1.2), 0) 
+      rotate(180deg) 
+      scale(1);
+    opacity: var(--opacity-min, 0.3);
+  }
+  75% {
+    transform: 
+      translate3d(calc(var(--float-x, 10px) * 1.2), calc(var(--float-y, -10px) * 0.6), 0) 
+      rotate(270deg) 
+      scale(var(--scale-min, 0.9));
+    opacity: var(--opacity-max, 0.7);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: 
+      translateX(-100%) 
+      skewX(-15deg);
+    opacity: 0.5;
+  }
+  50% {
+    transform: 
+      translateX(100%) 
+      skewX(-15deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: 
+      translateX(100%) 
+      skewX(-15deg);
+    opacity: 0.5;
+  }
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(-8px);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Animation Classes */
+.animate-float {
+  animation: float 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform;
+}
+
+.animate-shimmer {
+  animation: shimmer 3s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-gradient {
+  animation: gradient-shift 3s ease infinite;
+  background-size: 200% 200%;
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 1.5s infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 20s linear infinite;
+}
+
+/* Animation Delay (only used one) */
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+/* Performance Optimizations */
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+/* Reduce Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-shimmer,
+  .animate-gradient,
+  .animate-pulse-soft,
+  .animate-bounce-subtle,
+  .animate-spin-slow {
+    animation: none !important;
+  }
+}
