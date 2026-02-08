@@ -1,12 +1,31 @@
-import { useState } from 'react';
-import { 
-  Mail, Phone, MapPin, ArrowRight, Facebook, Twitter, Instagram, Youtube, Linkedin,
-  Send, CheckCircle, Award, Users, FileText, Zap, Heart, Trophy, Target, Sparkles, ChevronRight
-} from 'lucide-react';
-import weblogo from '../assets/images/pyqpw.png';
+import { useState } from "react";
+import {
+  Mail,
+  Phone,
+  MapPin,
+  ArrowRight,
+  Facebook,
+  Twitter,
+  Instagram,
+  Youtube,
+  Linkedin,
+  Send,
+  CheckCircle,
+  Award,
+  Users,
+  FileText,
+  Zap,
+  Heart,
+  Trophy,
+  Target,
+  Sparkles,
+  ChevronRight,
+} from "lucide-react";
+import weblogo from "../assets/images/pyqpw.png";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [isSubscribed, setIsSubscribed] = useState(false);
 
   const handleSubscribe = (e: React.FormEvent) => {
@@ -15,53 +34,83 @@ const Footer = () => {
       setIsSubscribed(true);
       setTimeout(() => {
         setIsSubscribed(false);
-        setEmail('');
+        setEmail("");
       }, 3000);
     }
   };
 
   const examLinks = [
-    { name: 'Railway Exams', icon: '🚂', popular: true },
-    { name: 'UPSC Civil Services', icon: '🏛️', popular: true },
-    { name: 'SSC Examinations', icon: '📋', popular: true },
-    { name: 'Banking & Finance', icon: '🏦', popular: false },
+    {name: "Railway Exams", icon: "🚂", popular: true, path: "/all-exams"},
+    {name: "UPSC Civil Services", icon: "🏛️", popular: true, path: "/all-exams"},
+    {name: "SSC Examinations", icon: "📋", popular: true, path: "/all-exams"},
+    {name: "Banking & Finance", icon: "🏦", popular: false, path: "/all-exams"}
     // { name: 'Defence Services', icon: '⚔️', popular: false },
     // { name: 'Teaching Eligibility', icon: '📚', popular: false },
   ];
 
   const quickLinks = [
-    { name: 'About Us', path: '/about' },
-    { name: 'How It Works', path: '/how-it-works' },
-    { name: 'Success Stories', path: '/success-stories' },
-    { name: 'Mock Tests', path: '/mock-tests' },
-    { name: 'Free PYQs', path: '/free-pyqs' },
-    { name: 'Blog', path: '/blog' },
+    { name: "About Us", path: "/about" },
+    { name: "How It Works", path: "/how-it-works" },
+    { name: "Success Stories", path: "/success-stories" },
+    { name: "Mock Tests", path: "/mock-tests" },
+    { name: "Free PYQs", path: "/free-pyqs" },
+    { name: "Blog", path: "/blog" },
   ];
 
   const supportLinks = [
-    { name: 'Help Center', path: '/help' },
-    { name: 'FAQs', path: '/faq' },
-    { name: 'Contact Us', path: '/contact' },
-    { name: 'Pricing', path: '/pricing' },
-    { name: 'Refund Policy', path: '/refund' },
-    { name: 'Terms of Service', path: '/terms' },
-    { name: 'Privacy Policy', path: '/privacy' },
-    { name: 'Careers', path: '/careers', badge: 'Hiring' },
+    { name: "Help Center", path: "/help" },
+    { name: "FAQs", path: "/faq" },
+    { name: "Contact Us", path: "/contact" },
+    { name: "Pricing", path: "/pricing" },
+    { name: "Refund Policy", path: "/refund" },
+    { name: "Terms of Service", path: "/terms" },
+    { name: "Privacy Policy", path: "/privacy" },
+    { name: "Careers", path: "/careers", badge: "Hiring" },
   ];
 
   const socialLinks = [
-    { name: 'Facebook', icon: Facebook, url: '#', color: '#1877F2', followers: '50K+' },
-    { name: 'Instagram', icon: Instagram, url: '#', color: '#E4405F', followers: '75K+' },
-    { name: 'Twitter', icon: Twitter, url: '#', color: '#1DA1F2', followers: '40K+' },
-    { name: 'Youtube', icon: Youtube, url: '#', color: '#FF0000', followers: '100K+' },
-    { name: 'Linkedin', icon: Linkedin, url: '#', color: '#0A66C2', followers: '25K+' },
+    {
+      name: "Facebook",
+      icon: Facebook,
+      url: "#",
+      color: "#1877F2",
+      followers: "50K+",
+    },
+    {
+      name: "Instagram",
+      icon: Instagram,
+      url: "#",
+      color: "#E4405F",
+      followers: "75K+",
+    },
+    {
+      name: "Twitter",
+      icon: Twitter,
+      url: "#",
+      color: "#1DA1F2",
+      followers: "40K+",
+    },
+    {
+      name: "Youtube",
+      icon: Youtube,
+      url: "#",
+      color: "#FF0000",
+      followers: "100K+",
+    },
+    {
+      name: "Linkedin",
+      icon: Linkedin,
+      url: "#",
+      color: "#0A66C2",
+      followers: "25K+",
+    },
   ];
 
   const stats = [
-    { value: '250K+', label: 'Active Students', icon: Users },
-    { value: '100K+', label: 'Questions Solved', icon: FileText },
-    { value: '98%', label: 'Success Rate', icon: Trophy },
-    { value: '50+', label: 'Exam Categories', icon: Target },
+    { value: "250K+", label: "Active Students", icon: Users },
+    { value: "100K+", label: "Questions Solved", icon: FileText },
+    { value: "98%", label: "Success Rate", icon: Trophy },
+    { value: "50+", label: "Exam Categories", icon: Target },
   ];
 
   return (
@@ -89,11 +138,12 @@ const Footer = () => {
                 </span>
               </h2>
               <p className="text-xl text-gray-400 font-bold mb-6">
-                Join 250,000+ aspirants receiving weekly exam tips, free PYQs, and exclusive study materials.
+                Join 250,000+ aspirants receiving weekly exam tips, free PYQs,
+                and exclusive study materials.
               </p>
               <div className="flex items-center gap-4">
                 <div className="flex -space-x-3">
-                  {['👨‍🎓', '👩‍💼', '👨‍💻', '👩‍🎓', '👨‍🏫'].map((emoji, idx) => (
+                  {["👨‍🎓", "👩‍💼", "👨‍💻", "👩‍🎓", "👨‍🏫"].map((emoji, idx) => (
                     <div
                       key={idx}
                       className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 border-4 border-black flex items-center justify-center text-2xl"
@@ -103,8 +153,12 @@ const Footer = () => {
                   ))}
                 </div>
                 <div>
-                  <div className="text-white font-black text-lg">250K+ Students</div>
-                  <div className="text-gray-400 text-sm">Already subscribed</div>
+                  <div className="text-white font-black text-lg">
+                    250K+ Students
+                  </div>
+                  <div className="text-gray-400 text-sm">
+                    Already subscribed
+                  </div>
                 </div>
               </div>
             </div>
@@ -146,8 +200,12 @@ const Footer = () => {
                     <div className="w-16 h-16 bg-green-400 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-black">
                       <CheckCircle className="w-10 h-10 text-black" />
                     </div>
-                    <h3 className="text-2xl font-black text-gray-900 mb-2">You're In! 🎉</h3>
-                    <p className="text-gray-600 font-bold">Check your email for the welcome gift!</p>
+                    <h3 className="text-2xl font-black text-gray-900 mb-2">
+                      You're In! 🎉
+                    </h3>
+                    <p className="text-gray-600 font-bold">
+                      Check your email for the welcome gift!
+                    </p>
                   </div>
                 )}
               </div>
@@ -168,16 +226,17 @@ const Footer = () => {
           <div className="lg:col-span-4">
             <div className="flex items-center gap-3 mb-6 group cursor-pointer">
               <div className="relative">
-                <img 
-                  src={weblogo} 
-                  alt="Logo" 
+                <img
+                  src={weblogo}
+                  alt="Logo"
                   className="h-16 w-auto object-contain transform group-hover:scale-110 transition-transform duration-300"
                 />
               </div>
             </div>
-            
+
             <p className="text-gray-400 font-medium mb-6 leading-relaxed">
-              India's #1 competitive exam preparation platform. Trusted by 250,000+ aspirants to crack their dream exams.
+              India's #1 competitive exam preparation platform. Trusted by
+              250,000+ aspirants to crack their dream exams.
             </p>
 
             {/* Contact Info */}
@@ -188,9 +247,12 @@ const Footer = () => {
                 </div>
                 <div>
                   <div className="text-white font-bold text-sm">Email Us</div>
-                  <a href="mailto:hello@exampro.com" className="hover:text-blue-400 transition-colors">
+                  <Link
+                    to="mailto:hello@exampro.com"
+                    className="hover:text-blue-400 transition-colors"
+                  >
                     hello@exampro.com
-                  </a>
+                  </Link>
                 </div>
               </div>
               <div className="flex items-start gap-3 text-gray-400">
@@ -199,9 +261,12 @@ const Footer = () => {
                 </div>
                 <div>
                   <div className="text-white font-bold text-sm">Call Us</div>
-                  <a href="tel:+911800123456" className="hover:text-blue-400 transition-colors">
+                  <Link
+                    to="tel:+911800123456"
+                    className="hover:text-blue-400 transition-colors"
+                  >
                     +91 1800-123-456
-                  </a>
+                  </Link>
                 </div>
               </div>
               <div className="flex items-start gap-3 text-gray-400">
@@ -214,7 +279,6 @@ const Footer = () => {
                 </div>
               </div>
             </div>
-
           </div>
 
           {/* Popular Exams - Spans 3 */}
@@ -226,8 +290,8 @@ const Footer = () => {
             <ul className="space-y-2">
               {examLinks.map((link) => (
                 <li key={link.name}>
-                  <a
-                    href="#"
+                  <Link
+                    to={link.path}
                     className="group flex items-center justify-between p-3 border-2 border-white/10 hover:border-white/30 hover:bg-white/5 transition-all duration-200"
                   >
                     <div className="flex items-center gap-3">
@@ -242,7 +306,7 @@ const Footer = () => {
                       </span>
                     )}
                     <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-white group-hover:translate-x-1 transition-all" />
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -257,13 +321,13 @@ const Footer = () => {
             <ul className="space-y-2">
               {quickLinks.map((link) => (
                 <li key={link.name}>
-                  <a
-                    href={link.path}
+                  <Link
+                    to={link.path}
                     className="text-gray-400 hover:text-white font-medium transition-colors flex items-center gap-2 group"
                   >
                     <div className="w-1.5 h-1.5 bg-gray-600 group-hover:bg-white transition-colors"></div>
                     {link.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -278,8 +342,8 @@ const Footer = () => {
             <ul className="space-y-2">
               {supportLinks.map((link) => (
                 <li key={link.name}>
-                  <a
-                    href={link.path}
+                  <Link
+                    to={link.path}
                     className="text-gray-400 hover:text-white font-medium transition-colors flex items-center justify-between group"
                   >
                     <div className="flex items-center gap-2">
@@ -291,7 +355,7 @@ const Footer = () => {
                         {link.badge}
                       </span>
                     )}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -306,8 +370,12 @@ const Footer = () => {
               className="p-6 bg-white/5 border-2 border-white/10 hover:border-white/30 hover:bg-white/10 transition-all duration-300 group cursor-pointer"
             >
               <stat.icon className="w-10 h-10 text-blue-400 mb-3 group-hover:scale-110 transition-transform" />
-              <div className="text-3xl font-black text-white mb-1">{stat.value}</div>
-              <div className="text-gray-400 text-sm font-medium">{stat.label}</div>
+              <div className="text-3xl font-black text-white mb-1">
+                {stat.value}
+              </div>
+              <div className="text-gray-400 text-sm font-medium">
+                {stat.label}
+              </div>
             </div>
           ))}
         </div>
@@ -315,14 +383,18 @@ const Footer = () => {
         {/* Social Media */}
         <div className="border-t-4 border-white/10 pt-12 mb-12">
           <div className="text-center mb-8">
-            <h3 className="text-white font-black text-2xl uppercase mb-2">Join Our Community</h3>
-            <p className="text-gray-400 font-medium">Connect with 250K+ aspirants on social media</p>
+            <h3 className="text-white font-black text-2xl uppercase mb-2">
+              Join Our Community
+            </h3>
+            <p className="text-gray-400 font-medium">
+              Connect with 250K+ aspirants on social media
+            </p>
           </div>
           <div className="flex flex-wrap justify-center gap-4">
             {socialLinks.map((social) => (
-              <a
+              <Link
                 key={social.name}
-                href={social.url}
+                to={social.url}
                 className="group relative"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -333,7 +405,7 @@ const Footer = () => {
                 <div className="absolute -top-2 -right-2 px-2 py-1 bg-white text-black text-xs font-black rounded-none border-2 border-black opacity-0 group-hover:opacity-100 transition-opacity">
                   {social.followers}
                 </div>
-              </a>
+              </Link>
             ))}
           </div>
         </div>
@@ -346,7 +418,9 @@ const Footer = () => {
                 <Award className="w-8 h-8 text-black" />
               </div>
               <div>
-                <div className="text-white font-black text-lg">98% Success Rate</div>
+                <div className="text-white font-black text-lg">
+                  98% Success Rate
+                </div>
                 <div className="text-gray-400 text-sm">Proven Track Record</div>
               </div>
             </div>
@@ -355,7 +429,9 @@ const Footer = () => {
                 <Zap className="w-8 h-8 text-black" />
               </div>
               <div>
-                <div className="text-white font-black text-lg">Instant Access</div>
+                <div className="text-white font-black text-lg">
+                  Instant Access
+                </div>
                 <div className="text-gray-400 text-sm">Start Learning Now</div>
               </div>
             </div>
@@ -364,7 +440,9 @@ const Footer = () => {
                 <Heart className="w-8 h-8 text-black" />
               </div>
               <div>
-                <div className="text-white font-black text-lg">Loved by Students</div>
+                <div className="text-white font-black text-lg">
+                  Loved by Students
+                </div>
                 <div className="text-gray-400 text-sm">250K+ Happy Users</div>
               </div>
             </div>
@@ -377,21 +455,31 @@ const Footer = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="text-gray-400 font-medium text-center md:text-left">
-              © 2026 All rights reserved. Made with{' '}
-              <Heart className="w-4 h-4 inline-block text-red-500 fill-current animate-pulse" /> in India
+              © 2026 All rights reserved. Made with{" "}
+              <Heart className="w-4 h-4 inline-block text-red-500 fill-current animate-pulse" />{" "}
+              in India
             </div>
             <div className="flex items-center gap-6">
-              <a href="#" className="text-gray-400 hover:text-white font-medium transition-colors text-sm">
+              <Link
+                to="/privacy"
+                className="text-gray-400 hover:text-white font-medium transition-colors text-sm"
+              >
                 Privacy Policy
-              </a>
+              </Link>
               <span className="text-gray-600">•</span>
-              <a href="#" className="text-gray-400 hover:text-white font-medium transition-colors text-sm">
+              <Link
+                to="/terms"
+                className="text-gray-400 hover:text-white font-medium transition-colors text-sm"
+              >
                 Terms of Service
-              </a>
+              </Link>
               <span className="text-gray-600">•</span>
-              <a href="#" className="text-gray-400 hover:text-white font-medium transition-colors text-sm">
+              <Link
+                to="/cookie"
+                className="text-gray-400 hover:text-white font-medium transition-colors text-sm"
+              >
                 Cookie Policy
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -399,7 +487,7 @@ const Footer = () => {
 
       {/* Scroll to Top Button */}
       <button
-        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         className="fixed bottom-8 right-8 w-14 h-14 bg-white text-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 transition-all duration-200 flex items-center justify-center group z-50"
         aria-label="Scroll to top"
       >
