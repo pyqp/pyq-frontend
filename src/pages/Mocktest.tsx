@@ -4,8 +4,8 @@ import {
   ChevronRight, Star, Shield, BarChart, Users,
   ArrowRight, Trophy, Timer, FileText
 } from 'lucide-react';
-import Navbar from './Navbar';
-import Footer from './Footer';
+import Navbar from '../../src/pages/Navbar';
+import Footer from '../../src/pages/Footer';
 
 const MockTest = () => {
   const [selectedExam, setSelectedExam] = useState<string | null>(null);
@@ -197,7 +197,8 @@ const MockTest = () => {
   return (
     <>
     <Navbar/>
-    <div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden">
+    <div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden pt-[124px]">
+      {/* pt-[124px] = 44px announcement + 80px navbar */}
       {/* Grain Overlay */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-50 mix-blend-multiply">
         <div className="absolute inset-0 bg-noise"></div>

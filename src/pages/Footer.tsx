@@ -25,8 +25,8 @@ const Footer = () => {
     { name: 'UPSC Civil Services', icon: '🏛️', popular: true },
     { name: 'SSC Examinations', icon: '📋', popular: true },
     { name: 'Banking & Finance', icon: '🏦', popular: false },
-    { name: 'Defence Services', icon: '⚔️', popular: false },
-    { name: 'Teaching Eligibility', icon: '📚', popular: false },
+    // { name: 'Defence Services', icon: '⚔️', popular: false },
+    // { name: 'Teaching Eligibility', icon: '📚', popular: false },
   ];
 
   const quickLinks = [

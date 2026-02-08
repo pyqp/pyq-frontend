@@ -7,38 +7,134 @@ import Register from '../features/auth/Register';
 import NotFound from '../../src/pages/NotFound';
 import ForgetPassword from '../features/auth/ForgetPassword';
 import MockTest from '../pages/Mocktest';
+import FreePYQs from '../pages/Freepyqs';
+import AllExams from '../pages/AllExams';
+import ScrollToTop from '../pages/Scrolltotop';
+import Blog from '../pages/Blog';
+import HowItWorks from '../pages/Howitworks';
+import HelpCenter from '../pages/Helpcenter';
+import FAQs from '../pages/Faqs';
+import ContactUs from '../pages/Contactus';
+import RefundPolicy from '../pages/Refundpolicy';
+import TermsOfService from '../pages/Termsofservice';
 
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <Layout />, // This will show Navbar, Hero, Footer
+    element: (
+      <>
+        <ScrollToTop />
+        <Layout />
+      </>
+    ),
   },
   {
     path: '/about',
-    element: <Layout><About /></Layout>, // This will show Navbar, About content, Footer
+    element: (
+      <>
+        <ScrollToTop />
+        <Layout><About /></Layout>
+      </>
+    ),
   },
   {
     path: '/pricing',
-    element: <Layout><Pricing /></Layout>, // This will show Navbar, Pricing content, Footer
+    element: (
+      <>
+        <ScrollToTop />
+        <Layout><Pricing /></Layout>
+      </>
+    ),
   },
   {
     path: '/login',
-    element: <Login />, // Login page without Layout (no Navbar/Footer)
-  },
-    {
-    path: '/signup',
-    element: <Register />, // Login page without Layout (no Navbar/Footer)
+    element: (
+      <>
+        <ScrollToTop />
+        <Login />
+      </>
+    ),
   },
   {
-   path: '/forgot-password',
-    element: <ForgetPassword />, 
+    path: '/signup',
+    element: (
+      <>
+        <ScrollToTop />
+        <Register />
+      </>
+    ),
+  },
+  {
+    path: '/forgot-password',
+    element: (
+      <>
+        <ScrollToTop />
+        <ForgetPassword />
+      </>
+    ),
   },
   {
     path: '/mock-tests',
-    element: <MockTest/>
+    element: (
+      <>
+        <ScrollToTop />
+        <MockTest />
+      </>
+    ),
+  },
+  {
+    path: '/free-pyqs',
+    element: (
+      <>
+        <ScrollToTop />
+        <FreePYQs />
+      </>
+    ),
+  },
+  {
+    path: '/all-exams',
+    element: (
+      <>
+        <ScrollToTop />
+        <AllExams />
+      </>
+    ),
+  },
+  {
+    path: '/blog',
+    element: (<Blog />),
+  },
+  {
+    path: '/how-it-works',
+    element: (<HowItWorks/>),
+  },
+  {
+    path: '/help',
+    element: (<HelpCenter/>),
+  },
+  {
+    path: '/faq',
+    element: (<FAQs/>),
+  },
+  {
+    path: '/contact',
+    element: (<ContactUs/>),
+  },
+  {
+    path: '/refund',
+    element: (<RefundPolicy/>),
+  },
+  {
+    path: '/terms',
+    element: (<TermsOfService/>),
   },
   {
     path: '*',
-    element: <Layout><NotFound /></Layout>, // This will show Navbar, 404 content, Footer
+    element: (
+      <>
+        <ScrollToTop />
+        <Layout><NotFound /></Layout>
+      </>
+    ),
   },
 ]);

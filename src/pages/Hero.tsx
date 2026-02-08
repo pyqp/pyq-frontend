@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { TrendingUp, Users, FileText, Award, ArrowRight, Download, BookOpen, Zap, CheckCircle, Star,Trophy } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { TrendingUp, Users, FileText, Award, ArrowRight, Download, BookOpen, Zap, CheckCircle, Star, Trophy } from 'lucide-react';
 
 const Hero = () => {
   const [scrollY, setScrollY] = useState(0);
@@ -204,15 +205,15 @@ const Hero = () => {
 
               {/* CTA Buttons - Neo-Brutalist Style */}
               <div className="flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4 pt-4">
-                <button className="group relative px-6 md:px-10 py-3 md:py-5 bg-white text-black font-black text-base md:text-xl rounded-none border-3 md:border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] md:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] md:hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 transition-all duration-200 uppercase tracking-tight">
+                <Link to="/free-pyqs" className="group relative inline-block px-6 md:px-10 py-3 md:py-5 bg-white text-black font-black text-base md:text-xl rounded-none border-3 md:border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] md:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] md:hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 transition-all duration-200 uppercase tracking-tight">
                   Start Free
                   <div className="absolute -top-2 md:-top-3 -right-2 md:-right-3 w-6 h-6 md:w-8 md:h-8 bg-green-400 rounded-full flex items-center justify-center text-black text-xs md:text-sm font-bold border-2 border-black">
                     ₹0
                   </div>
-                </button>
-                <button className="px-6 md:px-10 py-3 md:py-5 bg-black text-white font-black text-base md:text-xl rounded-none border-3 md:border-4 border-white shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] md:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] hover:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)] md:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:translate-x-1 hover:translate-y-1 transition-all duration-200 uppercase tracking-tight">
+                </Link>
+                <Link to="/mock-tests" className="inline-block px-6 md:px-10 py-3 md:py-5 bg-black text-white font-black text-base md:text-xl rounded-none border-3 md:border-4 border-white shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] md:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] hover:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)] md:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:translate-x-1 hover:translate-y-1 transition-all duration-200 uppercase tracking-tight">
                   Mock Tests
-                </button>
+                </Link>
               </div>
 
               {/* Live Stats Ticker */}
@@ -299,12 +300,13 @@ const Hero = () => {
                             </div>
                           </div>
 
-                          <button 
-                            className="relative z-10 w-full py-3 md:py-4 bg-black text-white font-black text-base md:text-lg rounded-none border-3 md:border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all duration-200 uppercase"
+                          <Link 
+                            to="/all-exams"
+                            className="relative z-10 w-full py-3 md:py-4 bg-black text-white font-black text-base md:text-lg rounded-none border-3 md:border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all duration-200 uppercase block text-center"
                             style={{ backgroundColor: displayExam.color }}
                           >
                             Explore →
-                          </button>
+                          </Link>
                         </div>
                       </div>
                     </div>
@@ -416,9 +418,9 @@ const Hero = () => {
                       <div className="text-lg md:text-xl font-black" style={{ color: exam.color }}>
                         {exam.questions} Qs
                       </div>
-                      <button className="p-2 md:p-3 bg-black text-white rounded-full border-2 border-black group-hover:scale-110 transition-transform">
+                      <Link to="/all-exams" className="inline-flex items-center justify-center p-2 md:p-3 bg-black text-white rounded-full border-2 border-black group-hover:scale-110 transition-transform">
                         <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -460,7 +462,7 @@ const Hero = () => {
                 </h3>
 
                 <p className="text-lg md:text-xl text-gray-400 mb-6 md:mb-8 leading-relaxed">
-                  Get complete access to <span className="text-white font-bold">2024 previous year questions</span> with 
+                  Get complete access to <span className="text-white font-bold">2025 previous year questions</span> with 
                   detailed, step-by-step solutions. Download PDFs, practice online unlimited times.
                 </p>
 
@@ -470,7 +472,7 @@ const Hero = () => {
                       <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-black" />
                     </div>
                     <div>
-                      <div className="text-white font-bold text-base md:text-lg mb-1">Latest 2024 Papers</div>
+                      <div className="text-white font-bold text-base md:text-lg mb-1">Latest 2025 Papers</div>
                       <div className="text-gray-400 text-sm">Most recent exam papers with solutions</div>
                     </div>
                   </div>
@@ -496,9 +498,9 @@ const Hero = () => {
                   </div>
                 </div>
 
-                <button className="px-6 md:px-10 py-3 md:py-5 bg-green-400 text-black font-black text-lg md:text-xl rounded-none border-3 md:border-4 border-white shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] md:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] hover:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)] md:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:translate-x-1 hover:translate-y-1 transition-all duration-200 uppercase">
+                <Link to="/free-pyqs" className="inline-block px-6 md:px-10 py-3 md:py-5 bg-green-400 text-black font-black text-lg md:text-xl rounded-none border-3 md:border-4 border-white shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] md:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] hover:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)] md:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:translate-x-1 hover:translate-y-1 transition-all duration-200 uppercase">
                   Start Free Practice
-                </button>
+                </Link>
               </div>
             </div>
 
@@ -537,26 +539,30 @@ const Hero = () => {
                       </div>
                       <div className="text-3xl md:text-4xl font-black text-amber-400">₹499</div>
                     </div>
-                    <button className="w-full py-2 md:py-3 bg-amber-400 text-black font-black text-sm md:text-base rounded-lg border-2 border-white hover:bg-amber-300 transition-colors">
+                    <Link to="/mock-tests" className="block w-full py-2 md:py-3 bg-amber-400 text-black font-black text-sm md:text-base rounded-lg border-2 border-white hover:bg-amber-300 transition-colors text-center">
                       BUY NOW →
-                    </button>
+                    </Link>
                   </div>
 
-                  <div className="p-4 md:p-5 bg-white/5 border-2 border-white/20 rounded-xl flex items-center justify-between hover:bg-white/10 transition-colors cursor-pointer">
-                    <div>
-                      <div className="text-2xl md:text-3xl font-black text-white">10 Tests</div>
-                      <div className="text-green-400 font-bold text-sm">Save ₹1,191</div>
+                  <Link to="/mock-tests" className="block p-4 md:p-5 bg-white/5 border-2 border-white/20 rounded-xl hover:bg-white/10 transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-2xl md:text-3xl font-black text-white">10 Tests</div>
+                        <div className="text-green-400 font-bold text-sm">Save ₹1,191</div>
+                      </div>
+                      <div className="text-2xl md:text-3xl font-black text-white">₹799</div>
                     </div>
-                    <div className="text-2xl md:text-3xl font-black text-white">₹799</div>
-                  </div>
+                  </Link>
 
-                  <div className="p-4 md:p-5 bg-white/5 border-2 border-white/20 rounded-xl flex items-center justify-between hover:bg-white/10 transition-colors cursor-pointer">
-                    <div>
-                      <div className="text-2xl md:text-3xl font-black text-white">1 Test</div>
-                      <div className="text-gray-400 font-bold text-sm">Trial Pack</div>
+                  <Link to="/mock-tests" className="block p-4 md:p-5 bg-white/5 border-2 border-white/20 rounded-xl hover:bg-white/10 transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-2xl md:text-3xl font-black text-white">1 Test</div>
+                        <div className="text-gray-400 font-bold text-sm">Trial Pack</div>
+                      </div>
+                      <div className="text-2xl md:text-3xl font-black text-white">₹199</div>
                     </div>
-                    <div className="text-2xl md:text-3xl font-black text-white">₹199</div>
-                  </div>
+                  </Link>
                 </div>
 
                 <div className="p-3 md:p-4 bg-blue-500/10 border-2 border-blue-400/30 rounded-xl">
