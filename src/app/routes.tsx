@@ -1,26 +1,28 @@
-import { createBrowserRouter } from 'react-router-dom';
-import Layout from '../../src/pages/Layout';
-import About from '../../src/pages/About';
-import Pricing from '../../src/pages/Pricing';
-import Login from '../../src/features/auth/Login';
-import Register from '../features/auth/Register';
-import NotFound from '../../src/pages/NotFound';
-import ForgetPassword from '../features/auth/ForgetPassword';
-import MockTest from '../pages/Mocktest';
-import FreePYQs from '../pages/Freepyqs';
-import AllExams from '../pages/AllExams';
-import ScrollToTop from '../pages/Scrolltotop';
-import Blog from '../pages/Blog';
-import HowItWorks from '../pages/Howitworks';
-import HelpCenter from '../pages/Helpcenter';
-import FAQs from '../pages/Faqs';
-import ContactUs from '../pages/Contactus';
-import RefundPolicy from '../pages/Refundpolicy';
-import TermsOfService from '../pages/Termsofservice';
+import { createBrowserRouter } from "react-router-dom";
+import Layout from "../../src/pages/Layout";
+import About from "../../src/pages/About";
+import Pricing from "../../src/pages/Pricing";
+import Login from "../../src/features/auth/Login";
+import Register from "../features/auth/Register";
+import NotFound from "../../src/pages/NotFound";
+import ForgetPassword from "../features/auth/ForgetPassword";
+import MockTest from "../pages/Mocktest";
+import FreePYQs from "../pages/Freepyqs";
+import AllExams from "../pages/AllExams";
+import ScrollToTop from "../pages/Scrolltotop";
+import Blog from "../pages/Blog";
+import HowItWorks from "../pages/Howitworks";
+import HelpCenter from "../pages/Helpcenter";
+import FAQs from "../pages/Faqs";
+import ContactUs from "../pages/Contactus";
+import RefundPolicy from "../pages/Refundpolicy";
+import TermsOfService from "../pages/Termsofservice";
+import PrivacyPolicy from "../pages/Privacypolicy";
+import Careers from "../pages/Careers";
 
 export const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: (
       <>
         <ScrollToTop />
@@ -29,25 +31,29 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/about',
+    path: "/about",
     element: (
       <>
         <ScrollToTop />
-        <Layout><About /></Layout>
+        <Layout>
+          <About />
+        </Layout>
       </>
     ),
   },
   {
-    path: '/pricing',
+    path: "/pricing",
     element: (
       <>
         <ScrollToTop />
-        <Layout><Pricing /></Layout>
+        <Layout>
+          <Pricing />
+        </Layout>
       </>
     ),
   },
   {
-    path: '/login',
+    path: "/login",
     element: (
       <>
         <ScrollToTop />
@@ -56,7 +62,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/signup',
+    path: "/signup",
     element: (
       <>
         <ScrollToTop />
@@ -65,7 +71,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/forgot-password',
+    path: "/forgot-password",
     element: (
       <>
         <ScrollToTop />
@@ -74,7 +80,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/mock-tests',
+    path: "/mock-tests",
     element: (
       <>
         <ScrollToTop />
@@ -83,7 +89,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/free-pyqs',
+    path: "/free-pyqs",
     element: (
       <>
         <ScrollToTop />
@@ -92,7 +98,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/all-exams',
+    path: "/all-exams",
     element: (
       <>
         <ScrollToTop />
@@ -101,39 +107,94 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/blog',
-    element: (<Blog />),
-  },
-  {
-    path: '/how-it-works',
-    element: (<HowItWorks/>),
-  },
-  {
-    path: '/help',
-    element: (<HelpCenter/>),
-  },
-  {
-    path: '/faq',
-    element: (<FAQs/>),
-  },
-  {
-    path: '/contact',
-    element: (<ContactUs/>),
-  },
-  {
-    path: '/refund',
-    element: (<RefundPolicy/>),
-  },
-  {
-    path: '/terms',
-    element: (<TermsOfService/>),
-  },
-  {
-    path: '*',
+    path: "/blog",
     element: (
       <>
         <ScrollToTop />
-        <Layout><NotFound /></Layout>
+        <Blog />
+      </>
+    ),
+  },
+  {
+    path: "/how-it-works",
+    element: (
+      <>
+        <ScrollToTop />
+        <HowItWorks />
+      </>
+    ),
+  },
+  {
+    path: "/help",
+    element: (
+      <>
+        <ScrollToTop />
+        <HelpCenter />
+      </>
+    ),
+  },
+  {
+    path: "/faq",
+    element: (
+      <>
+        <ScrollToTop />
+        <FAQs />
+      </>
+    ),
+  },
+  {
+    path: "/contact",
+    element: (
+      <>
+        <ScrollToTop />
+        <ContactUs />
+      </>
+    ),
+  },
+  {
+    path: "/refund",
+    element: (
+      <>
+        <ScrollToTop />
+        <RefundPolicy />
+      </>
+    ),
+  },
+  {
+    path: "/terms",
+    element: (
+      <>
+        <ScrollToTop />
+        <TermsOfService />
+      </>
+    ),
+  },
+  {
+    path: "/privacy",
+    element: (
+      <>
+        <ScrollToTop />
+        <PrivacyPolicy />
+      </>
+    ),
+  },
+  {
+    path: "/careers",
+    element: (
+      <>
+        <ScrollToTop />
+        <Careers />
+      </>
+    ),
+  },
+  {
+    path: "*",
+    element: (
+      <>
+        <ScrollToTop />
+        <Layout>
+          <NotFound />
+        </Layout>
       </>
     ),
   },

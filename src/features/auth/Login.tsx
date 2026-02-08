@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Sparkles, CheckCircle } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Sparkles, CheckCircle, X } from 'lucide-react';
 import weblogo from '../../assets/images/pyqpb.png';
 import { Link } from 'react-router-dom';
 
@@ -26,6 +26,15 @@ const Login = () => {
       <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-50 mix-blend-multiply">
         <div className="absolute inset-0 bg-noise"></div>
       </div>
+
+      {/* Close Button - Fixed Top Right */}
+      <Link
+        to="/"
+        className="fixed top-6 right-6 z-50 w-12 h-12 bg-black text-white border-4 border-black rounded-full flex items-center justify-center hover:bg-gray-900 transition-all duration-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 group"
+        title="Back to Home"
+      >
+        <X className="w-6 h-6 group-hover:rotate-90 transition-transform duration-200" />
+      </Link>
 
       {/* Animated Background */}
       <div className="fixed inset-0 overflow-hidden">

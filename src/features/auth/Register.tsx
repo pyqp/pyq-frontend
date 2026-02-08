@@ -1,33 +1,47 @@
-import { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, User, Phone, CheckCircle, AlertCircle } from 'lucide-react';
-import weblogo from '../../assets/images/pyqpb.png';
+import { useState } from "react";
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  User,
+  Phone,
+  CheckCircle,
+  AlertCircle,
+  X
+} from "lucide-react";
+import weblogo from "../../assets/images/pyqpb.png";
+import { Link } from "react-router-dom";
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    password: '',
-    confirmPassword: '',
-    targetExam: '',
+    fullName: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+    targetExam: "",
     agreeToTerms: false,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
-    
-    setFormData(prev => ({
+
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
 
     // Check password strength
-    if (name === 'password') {
+    if (name === "password") {
       const strength = calculatePasswordStrength(value);
       setPasswordStrength(strength);
     }
@@ -43,31 +57,31 @@ const Register = () => {
   };
 
   const getPasswordStrengthColor = () => {
-    if (passwordStrength === 0) return 'bg-gray-300';
-    if (passwordStrength === 1) return 'bg-red-500';
-    if (passwordStrength === 2) return 'bg-orange-500';
-    if (passwordStrength === 3) return 'bg-yellow-500';
-    return 'bg-green-500';
+    if (passwordStrength === 0) return "bg-gray-300";
+    if (passwordStrength === 1) return "bg-red-500";
+    if (passwordStrength === 2) return "bg-orange-500";
+    if (passwordStrength === 3) return "bg-yellow-500";
+    return "bg-green-500";
   };
 
   const getPasswordStrengthText = () => {
-    if (passwordStrength === 0) return 'Too Weak';
-    if (passwordStrength === 1) return 'Weak';
-    if (passwordStrength === 2) return 'Fair';
-    if (passwordStrength === 3) return 'Good';
-    return 'Strong';
+    if (passwordStrength === 0) return "Too Weak";
+    if (passwordStrength === 1) return "Weak";
+    if (passwordStrength === 2) return "Fair";
+    if (passwordStrength === 3) return "Good";
+    return "Strong";
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match!');
+      alert("Passwords do not match!");
       return;
     }
 
     if (!formData.agreeToTerms) {
-      alert('Please agree to Terms & Conditions');
+      alert("Please agree to Terms & Conditions");
       return;
     }
 
@@ -75,32 +89,32 @@ const Register = () => {
     // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
-      console.log('Registration attempt:', formData);
+      console.log("Registration attempt:", formData);
     }, 2000);
   };
 
   const targetExams = [
-    'UPSC Civil Services',
-    'SSC CGL',
-    'SSC CHSL',
-    'RRB NTPC',
-    'RRB Group D',
-    'IBPS PO',
-    'SBI PO',
-    'Banking Clerk',
-    'NDA',
-    'CDS',
-    'CTET',
-    'UGC NET',
-    'State PSC',
-    'Other',
+    "UPSC Civil Services",
+    "SSC CGL",
+    "SSC CHSL",
+    "RRB NTPC",
+    "RRB Group D",
+    "IBPS PO",
+    "SBI PO",
+    "Banking Clerk",
+    "NDA",
+    "CDS",
+    "CTET",
+    "UGC NET",
+    "State PSC",
+    "Other",
   ];
 
   const benefits = [
-    { icon: '🎯', text: '100% Free Access to PYQs' },
-    { icon: '📊', text: 'AI-Powered Performance Tracking' },
-    { icon: '🏆', text: 'Join 250K+ Successful Aspirants' },
-    { icon: '💎', text: 'Premium Mock Tests Available' },
+    { icon: "🎯", text: "100% Free Access to PYQs" },
+    { icon: "📊", text: "AI-Powered Performance Tracking" },
+    { icon: "🏆", text: "Join 250K+ Successful Aspirants" },
+    { icon: "💎", text: "Premium Mock Tests Available" },
   ];
 
   return (
@@ -109,6 +123,15 @@ const Register = () => {
       <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-50 mix-blend-multiply">
         <div className="absolute inset-0 bg-noise"></div>
       </div>
+
+      {/* Close Button - Fixed Top Right */}
+      <Link
+        to="/"
+        className="fixed top-6 right-6 z-50 w-12 h-12 bg-black text-white border-4 border-black rounded-full flex items-center justify-center hover:bg-gray-900 transition-all duration-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 group"
+        title="Back to Home"
+      >
+        <X className="w-6 h-6 group-hover:rotate-90 transition-transform duration-200" />
+      </Link>
 
       {/* Animated Background */}
       <div className="fixed inset-0 overflow-hidden">
@@ -124,9 +147,9 @@ const Register = () => {
           <div className="hidden lg:block space-y-8 sticky top-8">
             {/* Logo */}
             <div className="inline-block">
-              <img 
-                src={weblogo} 
-                alt="Logo" 
+              <img
+                src={weblogo}
+                alt="Logo"
                 className="h-16 w-auto object-contain"
               />
             </div>
@@ -155,7 +178,9 @@ const Register = () => {
                   className="p-4 bg-white border-4 border-black rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 transition-all duration-200"
                 >
                   <div className="text-3xl mb-2">{benefit.icon}</div>
-                  <div className="text-sm font-bold text-gray-900">{benefit.text}</div>
+                  <div className="text-sm font-bold text-gray-900">
+                    {benefit.text}
+                  </div>
                 </div>
               ))}
             </div>
@@ -164,15 +189,21 @@ const Register = () => {
             <div className="flex gap-8 pt-8 border-t-4 border-black">
               <div>
                 <div className="text-4xl font-black text-black mb-1">250K+</div>
-                <div className="text-gray-600 font-bold text-sm uppercase">Students</div>
+                <div className="text-gray-600 font-bold text-sm uppercase">
+                  Students
+                </div>
               </div>
               <div>
                 <div className="text-4xl font-black text-black mb-1">100K+</div>
-                <div className="text-gray-600 font-bold text-sm uppercase">Questions</div>
+                <div className="text-gray-600 font-bold text-sm uppercase">
+                  Questions
+                </div>
               </div>
               <div>
                 <div className="text-4xl font-black text-black mb-1">50+</div>
-                <div className="text-gray-600 font-bold text-sm uppercase">Exams</div>
+                <div className="text-gray-600 font-bold text-sm uppercase">
+                  Exams
+                </div>
               </div>
             </div>
 
@@ -182,10 +213,13 @@ const Register = () => {
                 <div className="w-12 h-12 bg-green-400 rounded-full flex items-center justify-center border-2 border-black">
                   <CheckCircle className="w-6 h-6 text-black" />
                 </div>
-                <div className="font-black text-2xl text-green-900">100% Free Start</div>
+                <div className="font-black text-2xl text-green-900">
+                  100% Free Start
+                </div>
               </div>
               <p className="text-green-800 font-medium">
-                No credit card required. Access free PYQs instantly after signup.
+                No credit card required. Access free PYQs instantly after
+                signup.
               </p>
             </div>
           </div>
@@ -194,13 +228,17 @@ const Register = () => {
           <div className="relative">
             {/* Mobile Logo & Header */}
             <div className="lg:hidden mb-8 text-center">
-              <img 
-                src={weblogo} 
-                alt="Logo" 
+              <img
+                src={weblogo}
+                alt="Logo"
                 className="h-12 w-auto object-contain mx-auto mb-4"
               />
-              <h2 className="text-4xl font-black text-black mb-2">CREATE ACCOUNT</h2>
-              <p className="text-gray-600 font-medium">Join 250K+ aspirants today</p>
+              <h2 className="text-4xl font-black text-black mb-2">
+                CREATE ACCOUNT
+              </h2>
+              <p className="text-gray-600 font-medium">
+                Join 250K+ aspirants today
+              </p>
             </div>
 
             <div className="bg-white border-4 border-black rounded-none shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-8 md:p-10 relative">
@@ -214,8 +252,12 @@ const Register = () => {
 
               {/* Form Header - Desktop Only */}
               <div className="hidden lg:block mb-8">
-                <h2 className="text-3xl font-black text-black mb-2">Create Your Account</h2>
-                <p className="text-gray-600 font-medium">Start your preparation journey for free</p>
+                <h2 className="text-3xl font-black text-black mb-2">
+                  Create Your Account
+                </h2>
+                <p className="text-gray-600 font-medium">
+                  Start your preparation journey for free
+                </p>
               </div>
 
               {/* Registration Form */}
@@ -292,7 +334,9 @@ const Register = () => {
                     >
                       <option value="">Select your target exam</option>
                       {targetExams.map((exam) => (
-                        <option key={exam} value={exam}>{exam}</option>
+                        <option key={exam} value={exam}>
+                          {exam}
+                        </option>
                       ))}
                     </select>
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
@@ -309,7 +353,7 @@ const Register = () => {
                   <div className="relative">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <input
-                      type={showPassword ? 'text' : 'password'}
+                      type={showPassword ? "text" : "password"}
                       name="password"
                       value={formData.password}
                       onChange={handleChange}
@@ -323,7 +367,11 @@ const Register = () => {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-900 transition-colors"
                     >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
                     </button>
                   </div>
                   {/* Password Strength Indicator */}
@@ -334,13 +382,22 @@ const Register = () => {
                           <div
                             key={idx}
                             className={`h-1.5 flex-1 transition-all duration-300 ${
-                              idx < passwordStrength ? getPasswordStrengthColor() : 'bg-gray-300'
+                              idx < passwordStrength
+                                ? getPasswordStrengthColor()
+                                : "bg-gray-300"
                             }`}
                           ></div>
                         ))}
                       </div>
                       <div className="text-xs font-bold text-gray-600">
-                        Strength: <span className={passwordStrength >= 3 ? 'text-green-600' : 'text-orange-600'}>
+                        Strength:{" "}
+                        <span
+                          className={
+                            passwordStrength >= 3
+                              ? "text-green-600"
+                              : "text-orange-600"
+                          }
+                        >
                           {getPasswordStrengthText()}
                         </span>
                       </div>
@@ -356,7 +413,7 @@ const Register = () => {
                   <div className="relative">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <input
-                      type={showConfirmPassword ? 'text' : 'password'}
+                      type={showConfirmPassword ? "text" : "password"}
                       name="confirmPassword"
                       value={formData.confirmPassword}
                       onChange={handleChange}
@@ -366,18 +423,25 @@ const Register = () => {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-900 transition-colors"
                     >
-                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      {showConfirmPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
                     </button>
                   </div>
-                  {formData.confirmPassword && formData.password !== formData.confirmPassword && (
-                    <div className="mt-2 flex items-center gap-2 text-red-600 text-xs font-bold">
-                      <AlertCircle className="w-4 h-4" />
-                      Passwords do not match
-                    </div>
-                  )}
+                  {formData.confirmPassword &&
+                    formData.password !== formData.confirmPassword && (
+                      <div className="mt-2 flex items-center gap-2 text-red-600 text-xs font-bold">
+                        <AlertCircle className="w-4 h-4" />
+                        Passwords do not match
+                      </div>
+                    )}
                 </div>
 
                 {/* Terms & Conditions */}
@@ -391,16 +455,31 @@ const Register = () => {
                         onChange={handleChange}
                         className="sr-only"
                       />
-                      <div className={`w-6 h-6 border-4 border-black transition-all duration-200 ${
-                        formData.agreeToTerms ? 'bg-black' : 'bg-white'
-                      }`}>
+                      <div
+                        className={`w-6 h-6 border-4 border-black transition-all duration-200 ${
+                          formData.agreeToTerms ? "bg-black" : "bg-white"
+                        }`}
+                      >
                         {formData.agreeToTerms && (
                           <CheckCircle className="w-4 h-4 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                         )}
                       </div>
                     </div>
                     <span className="text-sm font-medium text-gray-700 group-hover:text-black transition-colors">
-                      I agree to the <a href="/terms" className="font-black text-blue-600 hover:underline">Terms & Conditions</a> and <a href="/privacy" className="font-black text-blue-600 hover:underline">Privacy Policy</a>
+                      I agree to the{" "}
+                      <a
+                        href="/terms"
+                        className="font-black text-blue-600 hover:underline"
+                      >
+                        Terms & Conditions
+                      </a>{" "}
+                      and{" "}
+                      <a
+                        href="/privacy"
+                        className="font-black text-blue-600 hover:underline"
+                      >
+                        Privacy Policy
+                      </a>
                     </span>
                   </label>
                 </div>
@@ -428,8 +507,11 @@ const Register = () => {
               {/* Login Link */}
               <div className="mt-6 text-center p-4 bg-gray-50 border-4 border-black">
                 <p className="text-gray-700 font-medium">
-                  Already have an account?{' '}
-                  <a href="/login" className="font-black text-black underline hover:text-blue-600 transition-colors">
+                  Already have an account?{" "}
+                  <a
+                    href="/login"
+                    className="font-black text-black underline hover:text-blue-600 transition-colors"
+                  >
                     Login Here
                   </a>
                 </p>
