@@ -6,8 +6,6 @@ import {
   BookOpen, Clock,
   MessageCircle, Mail, Star, Filter, X
 } from 'lucide-react';
-import Navbar from './Navbar';
-import Footer from './Footer';
 
 const FAQs = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -346,7 +344,6 @@ const FAQs = () => {
 
   return (
     <>
-      <Navbar />
       <div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden">
         {/* Grain Overlay */}
         <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-50 mix-blend-multiply">
@@ -354,7 +351,7 @@ const FAQs = () => {
         </div>
 
         {/* Hero Section */}
-        <section className="relative bg-black py-16 md:py-24 overflow-hidden mt-[124px]">
+        <section className="relative bg-black py-16 md:py-24 overflow-hidden">
           {/* Animated Background */}
           <div className="absolute inset-0 opacity-20">
             <div className="absolute inset-0 bg-grid-pattern"></div>
@@ -645,7 +642,6 @@ const FAQs = () => {
           }
         `}</style>
       </div>
-      <Footer />
     </>
   );
 };

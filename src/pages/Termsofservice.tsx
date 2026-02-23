@@ -5,8 +5,6 @@ import {
   CheckCircle, XCircle, Scale, BookOpen, Globe, Mail,
   Calendar, Info, ChevronDown, ArrowRight, Zap
 } from 'lucide-react';
-import Navbar from './Navbar';
-import Footer from './Footer';
 
 const TermsOfService = () => {
   const [openSection, setOpenSection] = useState<number | null>(1);
@@ -299,7 +297,6 @@ const TermsOfService = () => {
 
   return (
     <>
-      <Navbar />
       <div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden">
         {/* Grain Overlay */}
         <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-50 mix-blend-multiply">
@@ -307,7 +304,7 @@ const TermsOfService = () => {
         </div>
 
         {/* Hero Section */}
-        <section className="relative bg-black py-16 md:py-24 overflow-hidden mt-[124px]">
+        <section className="relative bg-black py-16 md:py-24 overflow-hidden">
           <div className="absolute inset-0 opacity-20">
             <div className="absolute inset-0 bg-grid-pattern"></div>
             <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-pink-600/20"></div>
@@ -529,7 +526,6 @@ const TermsOfService = () => {
           }
         `}</style>
       </div>
-      <Footer />
     </>
   );
 };

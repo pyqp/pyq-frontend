@@ -1,182 +1,174 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { 
   Search, Calendar, Clock, ArrowRight, TrendingUp,
-  BookOpen, Filter, X, Star, Eye, MessageCircle
+  BookOpen, Filter, X, Star, Eye, MessageCircle, Loader2
 } from 'lucide-react';
-import Navbar from './Navbar';
-import Footer from './Footer';
+import apiClient from '../api/Client';
+import toast from 'react-hot-toast';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface Post {
+  _id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content?: string;
+  coverImage?: string;
+  author: { name: string; avatar?: string };
+  category: string;
+  tags: string[];
+  readTimeMinutes: number;
+  views: number;
+  publishedAt: string;
+}
 
 const Blog = () => {
+  const { slug } = useParams<{ slug?: string }>();
+  const navigate = useNavigate();
+
+  // If slug exists, show single post view
+  if (slug) return <BlogPost slug={slug} />;
+
+  // Otherwise show listing
+  return <BlogList />;
+};
+
+// ─── Single Post View ─────────────────────────────────────────────────────────
+const BlogPost = ({ slug }: { slug: string }) => {
+  const navigate = useNavigate();
+  const [post, setPost] = useState<Post | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    apiClient.get(`/blog/${slug}`)
+      .then(({ data }) => setPost(data.data))
+      .catch(() => { toast.error('Post not found'); navigate('/blog'); })
+      .finally(() => setLoading(false));
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
+        <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  if (!post) return null;
+
+  const categoryColors: Record<string, string> = {
+    'exam_tips': '#FF6B35',
+    'current_affairs': '#8B5CF6',
+    'strategy': '#DC2626',
+    'success_stories': '#10B981',
+    'news': '#DC2626',
+    'general': '#6B7280',
+  };
+
+  return (
+    <div className="min-h-screen bg-[#FAFAFA] py-12">
+      <div className="max-w-4xl mx-auto px-4">
+        <Link to="/blog" className="inline-flex items-center gap-2 text-blue-600 font-bold mb-8 hover:underline">
+          <ArrowRight className="w-4 h-4 rotate-180" />
+          Back to Blog
+        </Link>
+
+        <article className="bg-white border-4 border-black rounded-2xl p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+          {post.coverImage && (
+            <img src={post.coverImage} alt={post.title} className="w-full h-64 object-cover border-4 border-black mb-6" />
+          )}
+
+          <div className="flex items-center gap-3 mb-4">
+            <span 
+              className="px-3 py-1 font-black text-xs uppercase border-2 border-black rounded-full"
+              style={{ backgroundColor: (categoryColors[post.category] || '#6B7280') + '20', color: categoryColors[post.category] || '#6B7280' }}
+            >
+              {post.category.replace(/_/g, ' ')}
+            </span>
+            <div className="flex items-center gap-4 text-sm text-gray-600 font-medium">
+              <div className="flex items-center gap-1">
+                <Calendar className="w-4 h-4" />
+                <span>{new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Clock className="w-4 h-4" />
+                <span>{post.readTimeMinutes} min</span>
+              </div>
+            </div>
+          </div>
+
+          <h1 className="text-4xl font-black mb-4">{post.title}</h1>
+
+          <div className="flex items-center gap-3 mb-6 pb-6 border-b-2 border-gray-200">
+            <div className="text-3xl">{post.author.avatar || '👤'}</div>
+            <div>
+              <div className="font-black text-black">{post.author.name}</div>
+              <div className="text-sm text-gray-600 font-medium">Expert Contributor</div>
+            </div>
+          </div>
+
+          <div 
+            className="prose prose-lg max-w-none mb-6"
+            dangerouslySetInnerHTML={{ __html: post.content || post.excerpt }}
+          />
+
+          {post.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 pt-6 border-t-2 border-gray-200">
+              {post.tags.map((tag, idx) => (
+                <span key={idx} className="px-3 py-1 bg-white border-2 border-black rounded-full text-xs font-bold text-gray-700">
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
+        </article>
+      </div>
+    </div>
+  );
+};
+
+// ─── Blog Listing ─────────────────────────────────────────────────────────────
+const BlogList = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const categories = [
-    { id: 'all', name: 'All Posts', icon: '📚', count: 24, color: '#6B7280' },
-    { id: 'exam-tips', name: 'Exam Tips', icon: '💡', count: 8, color: '#FF6B35' },
-    { id: 'study-guides', name: 'Study Guides', icon: '📖', count: 6, color: '#2E5CFF' },
-    { id: 'success-stories', name: 'Success Stories', icon: '🏆', count: 5, color: '#10B981' },
-    { id: 'current-affairs', name: 'Current Affairs', icon: '📰', count: 3, color: '#8B5CF6' },
-    { id: 'strategy', name: 'Strategy', icon: '🎯', count: 2, color: '#DC2626' }
+    { id: 'all', name: 'All Posts', icon: '📚', count: 0, color: '#6B7280' },
+    { id: 'exam_tips', name: 'Exam Tips', icon: '💡', count: 0, color: '#FF6B35' },
+    { id: 'study-guides', name: 'Study Guides', icon: '📖', count: 0, color: '#2E5CFF' },
+    { id: 'success_stories', name: 'Success Stories', icon: '🏆', count: 0, color: '#10B981' },
+    { id: 'current_affairs', name: 'Current Affairs', icon: '📰', count: 0, color: '#8B5CF6' },
+    { id: 'strategy', name: 'Strategy', icon: '🎯', count: 0, color: '#DC2626' }
   ];
 
-  const featuredPost = {
-    id: 1,
-    title: 'Complete Guide to Crack SSC CGL 2024 in First Attempt',
-    excerpt: 'Detailed roadmap, study plan, and expert tips to help you prepare effectively for SSC CGL exam. Learn from toppers and avoid common mistakes.',
-    category: 'Study Guides',
-    categoryId: 'study-guides',
-    author: 'Priya Sharma',
-    authorAvatar: '👩‍🎓',
-    date: '2024-02-05',
-    readTime: '12 min',
-    views: '15.2K',
-    comments: 89,
-    image: '🎯',
-    featured: true,
-    tags: ['SSC CGL', 'Strategy', 'Study Plan']
-  };
+  useEffect(() => {
+    setLoading(true);
+    const params: any = { page, limit: 9 };
+    if (selectedCategory !== 'all') params.category = selectedCategory;
 
-  const blogPosts = [
-    {
-      id: 2,
-      title: 'Top 10 Time Management Tips for Competitive Exams',
-      excerpt: 'Master the art of time management during exam preparation and actual test-taking with these proven strategies from toppers.',
-      category: 'Exam Tips',
-      categoryId: 'exam-tips',
-      author: 'Rahul Kumar',
-      authorAvatar: '👨‍💼',
-      date: '2024-02-04',
-      readTime: '8 min',
-      views: '12.5K',
-      comments: 67,
-      image: '⏰',
-      trending: true,
-      tags: ['Time Management', 'Tips', 'Productivity']
-    },
-    {
-      id: 3,
-      title: 'How I Cleared RRB NTPC in My First Attempt - AIR 89',
-      excerpt: 'My journey from preparation to selection. Sharing my complete study routine, resources used, and mistakes to avoid.',
-      category: 'Success Stories',
-      categoryId: 'success-stories',
-      author: 'Amit Singh',
-      authorAvatar: '👨‍🎓',
-      date: '2024-02-03',
-      readTime: '10 min',
-      views: '18.3K',
-      comments: 142,
-      image: '🎉',
-      popular: true,
-      tags: ['RRB NTPC', 'Success Story', 'Motivation']
-    },
-    {
-      id: 4,
-      title: 'Important Current Affairs Topics for February 2024',
-      excerpt: 'Stay updated with the most important current affairs topics that are likely to be asked in upcoming competitive exams.',
-      category: 'Current Affairs',
-      categoryId: 'current-affairs',
-      author: 'Anjali Patel',
-      authorAvatar: '👩‍💼',
-      date: '2024-02-02',
-      readTime: '6 min',
-      views: '9.8K',
-      comments: 34,
-      image: '📰',
-      new: true,
-      tags: ['Current Affairs', 'GK', 'Monthly Updates']
-    },
-    {
-      id: 5,
-      title: 'Best Books for UPSC Preparation 2024',
-      excerpt: 'Comprehensive list of must-read books for UPSC CSE Prelims and Mains recommended by toppers and experts.',
-      category: 'Study Guides',
-      categoryId: 'study-guides',
-      author: 'Vikram Malhotra',
-      authorAvatar: '👨‍🏫',
-      date: '2024-02-01',
-      readTime: '15 min',
-      views: '22.1K',
-      comments: 98,
-      image: '📚',
-      trending: true,
-      tags: ['UPSC', 'Books', 'Resources']
-    },
-    {
-      id: 6,
-      title: 'Mock Test Analysis: How to Review and Improve',
-      excerpt: 'Learn the right way to analyze your mock test performance and create an action plan for improvement.',
-      category: 'Exam Tips',
-      categoryId: 'exam-tips',
-      author: 'Neha Gupta',
-      authorAvatar: '👩‍💻',
-      date: '2024-01-31',
-      readTime: '9 min',
-      views: '11.4K',
-      comments: 56,
-      image: '📊',
-      popular: false,
-      tags: ['Mock Tests', 'Analysis', 'Improvement']
-    },
-    {
-      id: 7,
-      title: 'Last Month Revision Strategy for Banking Exams',
-      excerpt: 'Effective revision techniques and strategies to maximize your score in the final month before banking exams.',
-      category: 'Strategy',
-      categoryId: 'strategy',
-      author: 'Karan Mehta',
-      authorAvatar: '👨‍💼',
-      date: '2024-01-30',
-      readTime: '11 min',
-      views: '13.7K',
-      comments: 71,
-      image: '🎯',
-      new: false,
-      tags: ['Banking', 'Revision', 'Last Minute']
-    },
-    {
-      id: 8,
-      title: 'Common Mistakes to Avoid in SSC CHSL Exam',
-      excerpt: 'Learn from the mistakes of previous aspirants and avoid these common pitfalls in SSC CHSL preparation and exam.',
-      category: 'Exam Tips',
-      categoryId: 'exam-tips',
-      author: 'Simran Kaur',
-      authorAvatar: '👩‍🎓',
-      date: '2024-01-29',
-      readTime: '7 min',
-      views: '8.9K',
-      comments: 42,
-      image: '⚠️',
-      popular: false,
-      tags: ['SSC CHSL', 'Mistakes', 'Tips']
-    },
-    {
-      id: 9,
-      title: 'From Zero to Hero: My Railway Exam Journey',
-      excerpt: 'Starting from scratch to getting selected in Railway Group D. Complete journey, struggles, and strategies that worked.',
-      category: 'Success Stories',
-      categoryId: 'success-stories',
-      author: 'Rajesh Verma',
-      authorAvatar: '👨‍🔧',
-      date: '2024-01-28',
-      readTime: '13 min',
-      views: '16.8K',
-      comments: 127,
-      image: '🚂',
-      trending: false,
-      tags: ['Railway', 'Success Story', 'Inspiration']
-    }
-  ];
+    apiClient.get('/blog', { params })
+      .then(({ data }) => {
+        setPosts(data.data || []);
+        setTotalPages(data.pagination?.totalPages || 1);
+      })
+      .catch(() => toast.error('Failed to load posts'))
+      .finally(() => setLoading(false));
+  }, [selectedCategory, page]);
 
-  const filteredPosts = blogPosts.filter(post => {
-    const matchesCategory = selectedCategory === 'all' || post.categoryId === selectedCategory;
-    const matchesSearch = searchQuery === '' || 
-      post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesCategory && matchesSearch;
-  });
+  const filteredPosts = searchQuery
+    ? posts.filter(p =>
+        p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())))
+    : posts;
+
+  const featuredPost = posts[0];
 
   const trendingTopics = [
     'SSC CGL 2024',
@@ -189,7 +181,6 @@ const Blog = () => {
 
   return (
     <>
-      <Navbar />
       <div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden">
         {/* Grain Overlay */}
         <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-50 mix-blend-multiply">
@@ -197,7 +188,7 @@ const Blog = () => {
         </div>
 
         {/* Hero Section */}
-        <section className="relative bg-black py-16 md:py-24 overflow-hidden mt-[124px]">
+        <section className="relative bg-black py-16 md:py-24 overflow-hidden">
           {/* Animated Background */}
           <div className="absolute inset-0 opacity-20">
             <div className="absolute inset-0 bg-grid-pattern"></div>
@@ -282,7 +273,7 @@ const Blog = () => {
                     <div className="font-black text-sm mb-1" style={{ color: category.color }}>
                       {category.name}
                     </div>
-                    <div className="text-xs text-gray-600 font-bold">{category.count} Posts</div>
+                    <div className="text-xs text-gray-600 font-bold">{posts.length} Posts</div>
                   </button>
                 ))}
               </div>
@@ -291,91 +282,89 @@ const Blog = () => {
         </section>
 
         {/* Featured Post */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
-          <div className="flex items-center gap-2 mb-6">
-            <Star className="w-6 h-6 text-yellow-500 fill-yellow-500" />
-            <h2 className="text-3xl font-black text-black">Featured Post</h2>
-          </div>
+        {featuredPost && !searchQuery && (
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+            <div className="flex items-center gap-2 mb-6">
+              <Star className="w-6 h-6 text-yellow-500 fill-yellow-500" />
+              <h2 className="text-3xl font-black text-black">Featured Post</h2>
+            </div>
 
-          <div className="bg-gradient-to-br from-yellow-50 to-orange-50 border-4 border-black rounded-3xl overflow-hidden shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 transition-all duration-300">
-            <div className="grid md:grid-cols-2 gap-0">
-              {/* Image Section */}
-              <div className="relative bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center p-16">
-                <div className="text-9xl">{featuredPost.image}</div>
-                <div className="absolute top-4 right-4 px-4 py-2 bg-yellow-400 text-black font-black text-sm uppercase border-2 border-black rounded-full rotate-12">
-                  Featured
-                </div>
-              </div>
-
-              {/* Content Section */}
-              <div className="p-8 md:p-12">
-                <div className="flex items-center gap-3 mb-4">
-                  <span 
-                    className="px-3 py-1 font-black text-xs uppercase border-2 border-black rounded-full"
-                    style={{ backgroundColor: categories.find(c => c.id === featuredPost.categoryId)?.color + '20', color: categories.find(c => c.id === featuredPost.categoryId)?.color }}
-                  >
-                    {featuredPost.category}
-                  </span>
-                  <div className="flex items-center gap-4 text-sm text-gray-600 font-medium">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
-                      <span>{new Date(featuredPost.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      <span>{featuredPost.readTime}</span>
-                    </div>
+            <div className="bg-gradient-to-br from-yellow-50 to-orange-50 border-4 border-black rounded-3xl overflow-hidden shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 transition-all duration-300">
+              <div className="grid md:grid-cols-2 gap-0">
+                {/* Image Section */}
+                <div className="relative bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center p-16">
+                  <div className="text-9xl">🎯</div>
+                  <div className="absolute top-4 right-4 px-4 py-2 bg-yellow-400 text-black font-black text-sm uppercase border-2 border-black rounded-full rotate-12">
+                    Featured
                   </div>
                 </div>
 
-                <h3 className="text-3xl md:text-4xl font-black text-black mb-4 leading-tight">
-                  {featuredPost.title}
-                </h3>
-
-                <p className="text-lg text-gray-700 font-medium mb-6 leading-relaxed">
-                  {featuredPost.excerpt}
-                </p>
-
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {featuredPost.tags.map((tag, idx) => (
-                    <span key={idx} className="px-3 py-1 bg-white border-2 border-black rounded-full text-xs font-bold text-gray-700">
-                      #{tag}
+                {/* Content Section */}
+                <div className="p-8 md:p-12">
+                  <div className="flex items-center gap-3 mb-4">
+                    <span 
+                      className="px-3 py-1 font-black text-xs uppercase border-2 border-black rounded-full"
+                      style={{ backgroundColor: categories.find(c => c.id === featuredPost.category)?.color + '20', color: categories.find(c => c.id === featuredPost.category)?.color }}
+                    >
+                      {featuredPost.category.replace(/_/g, ' ')}
                     </span>
-                  ))}
-                </div>
-
-                <div className="flex items-center justify-between pt-6 border-t-2 border-black/10">
-                  <div className="flex items-center gap-3">
-                    <div className="text-3xl">{featuredPost.authorAvatar}</div>
-                    <div>
-                      <div className="font-black text-black">{featuredPost.author}</div>
-                      <div className="text-sm text-gray-600 font-medium">Expert Contributor</div>
+                    <div className="flex items-center gap-4 text-sm text-gray-600 font-medium">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-4 h-4" />
+                        <span>{new Date(featuredPost.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-4 h-4" />
+                        <span>{featuredPost.readTimeMinutes} min</span>
+                      </div>
                     </div>
                   </div>
 
-                  <Link
-                    to={`/blog/${featuredPost.id}`}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white font-black uppercase border-4 border-black hover:bg-orange-500 transition-colors"
-                  >
-                    Read More
-                    <ArrowRight className="w-5 h-5" />
-                  </Link>
-                </div>
+                  <h3 className="text-3xl md:text-4xl font-black text-black mb-4 leading-tight">
+                    {featuredPost.title}
+                  </h3>
 
-                <div className="flex items-center gap-6 mt-4 text-sm text-gray-600 font-medium">
-                  <div className="flex items-center gap-1">
-                    <Eye className="w-4 h-4" />
-                    <span>{featuredPost.views} views</span>
+                  <p className="text-lg text-gray-700 font-medium mb-6 leading-relaxed">
+                    {featuredPost.excerpt}
+                  </p>
+
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {featuredPost.tags.slice(0, 3).map((tag, idx) => (
+                      <span key={idx} className="px-3 py-1 bg-white border-2 border-black rounded-full text-xs font-bold text-gray-700">
+                        #{tag}
+                      </span>
+                    ))}
                   </div>
-                  <div className="flex items-center gap-1">
-                    <MessageCircle className="w-4 h-4" />
-                    <span>{featuredPost.comments} comments</span>
+
+                  <div className="flex items-center justify-between pt-6 border-t-2 border-black/10">
+                    <div className="flex items-center gap-3">
+                      <div className="text-3xl">{featuredPost.author.avatar || '👤'}</div>
+                      <div>
+                        <div className="font-black text-black">{featuredPost.author.name}</div>
+                        <div className="text-sm text-gray-600 font-medium">Expert Contributor</div>
+                      </div>
+                    </div>
+
+                    <Link
+                      to={`/blog/${featuredPost.slug}`}
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white font-black uppercase border-4 border-black hover:bg-orange-500 transition-colors"
+                    >
+                      Read More
+                      <ArrowRight className="w-5 h-5" />
+                    </Link>
+                  </div>
+
+                  <div className="flex items-center gap-6 mt-4 text-sm text-gray-600 font-medium">
+                    <div className="flex items-center gap-1">
+                      <Eye className="w-4 h-4" />
+                      <span>{featuredPost.views} views</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* Blog Grid */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
@@ -396,7 +385,11 @@ const Blog = () => {
             )}
           </div>
 
-          {filteredPosts.length === 0 ? (
+          {loading ? (
+            <div className="flex justify-center py-20">
+              <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+            </div>
+          ) : filteredPosts.length === 0 ? (
             <div className="bg-white border-4 border-black rounded-xl p-12 text-center">
               <BookOpen className="w-16 h-16 mx-auto mb-4 text-gray-400" />
               <h3 className="text-2xl font-black text-black mb-2">No Posts Found</h3>
@@ -415,39 +408,20 @@ const Blog = () => {
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredPosts.map((post) => (
+              {filteredPosts.slice(1).map((post) => (
                 <div
-                  key={post.id}
+                  key={post._id}
                   className="bg-white border-4 border-black rounded-2xl overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:scale-102 transition-all duration-300 group"
                 >
                   {/* Image/Icon Header */}
                   <div 
                     className="relative h-48 flex items-center justify-center"
                     style={{ 
-                      backgroundColor: categories.find(c => c.id === post.categoryId)?.color + '20'
+                      backgroundColor: categories.find(c => c.id === post.category)?.color + '20'
                     }}
                   >
                     <div className="text-7xl group-hover:scale-110 transition-transform">
-                      {post.image}
-                    </div>
-
-                    {/* Badges */}
-                    <div className="absolute top-3 right-3 flex flex-col gap-2">
-                      {post.trending && (
-                        <div className="px-3 py-1 bg-red-500 text-white font-black text-xs uppercase border-2 border-black rounded-full">
-                          🔥 Trending
-                        </div>
-                      )}
-                      {post.new && (
-                        <div className="px-3 py-1 bg-green-500 text-white font-black text-xs uppercase border-2 border-black rounded-full">
-                          ✨ New
-                        </div>
-                      )}
-                      {post.popular && (
-                        <div className="px-3 py-1 bg-yellow-400 text-black font-black text-xs uppercase border-2 border-black rounded-full">
-                          ⭐ Popular
-                        </div>
-                      )}
+                      {post.coverImage ? <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover" /> : '📝'}
                     </div>
                   </div>
 
@@ -457,15 +431,15 @@ const Blog = () => {
                       <span 
                         className="px-3 py-1 font-black text-xs uppercase border-2 border-black rounded-full"
                         style={{ 
-                          backgroundColor: categories.find(c => c.id === post.categoryId)?.color + '20',
-                          color: categories.find(c => c.id === post.categoryId)?.color
+                          backgroundColor: categories.find(c => c.id === post.category)?.color + '20',
+                          color: categories.find(c => c.id === post.category)?.color
                         }}
                       >
-                        {post.category}
+                        {post.category.replace(/_/g, ' ')}
                       </span>
                       <div className="flex items-center gap-2 text-xs text-gray-500 font-medium">
                         <Clock className="w-3 h-3" />
-                        <span>{post.readTime}</span>
+                        <span>{post.readTimeMinutes} min</span>
                       </div>
                     </div>
 
@@ -489,15 +463,15 @@ const Blog = () => {
                     {/* Author & Stats */}
                     <div className="flex items-center justify-between pt-4 border-t-2 border-gray-100">
                       <div className="flex items-center gap-2">
-                        <div className="text-2xl">{post.authorAvatar}</div>
+                        <div className="text-2xl">{post.author.avatar || '👤'}</div>
                         <div className="text-xs">
-                          <div className="font-bold text-black">{post.author}</div>
-                          <div className="text-gray-500">{new Date(post.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
+                          <div className="font-bold text-black">{post.author.name}</div>
+                          <div className="text-gray-500">{new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
                         </div>
                       </div>
 
                       <Link
-                        to={`/blog/${post.id}`}
+                        to={`/blog/${post.slug}`}
                         className="p-2 bg-black text-white rounded-full border-2 border-black group-hover:bg-blue-600 transition-colors"
                       >
                         <ArrowRight className="w-4 h-4" />
@@ -509,10 +483,6 @@ const Blog = () => {
                       <div className="flex items-center gap-1">
                         <Eye className="w-3 h-3" />
                         <span>{post.views}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <MessageCircle className="w-3 h-3" />
-                        <span>{post.comments}</span>
                       </div>
                     </div>
                   </div>
@@ -625,7 +595,6 @@ const Blog = () => {
           }
         `}</style>
       </div>
-      <Footer />
     </>
   );
 };

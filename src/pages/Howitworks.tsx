@@ -6,8 +6,6 @@ import {
   TrendingUp, Brain, Users, Star, ArrowRight,
   FileText, Search, Sparkles
 } from 'lucide-react';
-import Navbar from './Navbar';
-import Footer from './Footer';
 
 const HowItWorks = () => {
   const [activeTab, setActiveTab] = useState<'free' | 'paid'>('free');
@@ -212,7 +210,6 @@ const HowItWorks = () => {
 
   return (
     <>
-      <Navbar />
       <div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden">
         {/* Grain Overlay */}
         <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-50 mix-blend-multiply">
@@ -220,7 +217,7 @@ const HowItWorks = () => {
         </div>
 
         {/* Hero Section */}
-        <section className="relative bg-black py-16 md:py-24 overflow-hidden mt-[124px]">
+        <section className="relative bg-black py-16 md:py-24 overflow-hidden">
           {/* Animated Background */}
           <div className="absolute inset-0 opacity-20">
             <div className="absolute inset-0 bg-grid-pattern"></div>
@@ -601,7 +598,6 @@ const HowItWorks = () => {
           }
         `}</style>
       </div>
-      <Footer />
     </>
   );
 };

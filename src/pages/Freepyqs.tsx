@@ -1,12 +1,36 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Search, Download, FileText, Calendar, Filter, X, 
   ChevronDown, BookOpen, Award, TrendingUp,
-  CheckCircle, Star, Zap, ArrowRight
+  CheckCircle, Star, Zap, ArrowRight, Loader2
 } from 'lucide-react';
-import Navbar from '../../src/pages/Navbar';
-import Footer from '../../src/pages/Footer';
 import { Link } from 'react-router-dom';
+import apiClient from '../api/Client';
+import { examApi } from '../api/Exam.api';
+import toast from 'react-hot-toast';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface PYQ {
+  _id: string;
+  exam: { _id: string; name: string; shortName: string };
+  year: number;
+  shift?: string;
+  title: string;
+  slug: string;
+  totalQuestions: number;
+  duration: number;
+  subjects: string[];
+  pdfUrl?: string;
+  downloadCount: number;
+  isPaid: boolean;
+}
+
+interface ExamOpt {
+  _id: string;
+  name: string;
+  shortName: string;
+  category: string;
+}
 
 const FreePYQs = () => {
   const [selectedExam, setSelectedExam] = useState<string>('all');
@@ -14,15 +38,20 @@ const FreePYQs = () => {
   const [selectedSubject, setSelectedSubject] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [pyqs, setPyqs] = useState<PYQ[]>([]);
+  const [exams, setExams] = useState<ExamOpt[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const examCategories = [
-    { id: 'all', name: 'All Exams', icon: '📚', color: '#6B7280', count: 1500 },
-    { id: 'railway', name: 'Railway', icon: '🚂', color: '#FF6B35', count: 250 },
-    { id: 'upsc', name: 'UPSC', icon: '🏛️', color: '#2E5CFF', count: 300 },
-    { id: 'ssc', name: 'SSC', icon: '📋', color: '#8B5CF6', count: 350 },
-    { id: 'banking', name: 'Banking', icon: '🏦', color: '#10B981', count: 280 },
-    { id: 'defence', name: 'Defence', icon: '⚔️', color: '#DC2626', count: 200 },
-    { id: 'teaching', name: 'Teaching', icon: '📚', color: '#0891B2', count: 120 },
+    { id: 'all', name: 'All Exams', icon: '📚', color: '#6B7280', count: 0 },
+    { id: 'Railway', name: 'Railway', icon: '🚂', color: '#FF6B35', count: 0 },
+    { id: 'UPSC', name: 'UPSC', icon: '🏛️', color: '#2E5CFF', count: 0 },
+    { id: 'SSC', name: 'SSC', icon: '📋', color: '#8B5CF6', count: 0 },
+    { id: 'Banking', name: 'Banking', icon: '🏦', color: '#10B981', count: 0 },
+    { id: 'Defence', name: 'Defence', icon: '⚔️', color: '#DC2626', count: 0 },
+    { id: 'Teaching', name: 'Teaching', icon: '📚', color: '#0891B2', count: 0 },
   ];
 
   const years = [
@@ -47,110 +76,36 @@ const FreePYQs = () => {
     { value: 'geography', label: 'Geography' },
   ];
 
-  // Sample PYQ data
-  const pyqData = [
-    {
-      id: 1,
-      exam: 'SSC CGL',
-      category: 'ssc',
-      year: '2024',
-      subject: 'General Knowledge',
-      questions: 100,
-      downloads: 15420,
-      difficulty: 'Medium',
-      size: '2.4 MB',
-      popular: true
-    },
-    {
-      id: 2,
-      exam: 'RRB NTPC',
-      category: 'railway',
-      year: '2024',
-      subject: 'Mathematics',
-      questions: 80,
-      downloads: 12300,
-      difficulty: 'Easy',
-      size: '1.8 MB',
-      popular: true
-    },
-    {
-      id: 3,
-      exam: 'UPSC CSE Prelims',
-      category: 'upsc',
-      year: '2023',
-      subject: 'History',
-      questions: 120,
-      downloads: 18900,
-      difficulty: 'Hard',
-      size: '3.2 MB',
-      popular: true
-    },
-    {
-      id: 4,
-      exam: 'IBPS PO',
-      category: 'banking',
-      year: '2024',
-      subject: 'Reasoning',
-      questions: 90,
-      downloads: 10500,
-      difficulty: 'Medium',
-      size: '2.1 MB',
-      popular: false
-    },
-    {
-      id: 5,
-      exam: 'NDA',
-      category: 'defence',
-      year: '2023',
-      subject: 'Mathematics',
-      questions: 150,
-      downloads: 9800,
-      difficulty: 'Hard',
-      size: '2.8 MB',
-      popular: false
-    },
-    {
-      id: 6,
-      exam: 'CTET',
-      category: 'teaching',
-      year: '2024',
-      subject: 'English',
-      questions: 100,
-      downloads: 8700,
-      difficulty: 'Easy',
-      size: '1.9 MB',
-      popular: false
-    },
-    {
-      id: 7,
-      exam: 'SSC CHSL',
-      category: 'ssc',
-      year: '2023',
-      subject: 'English',
-      questions: 100,
-      downloads: 11200,
-      difficulty: 'Medium',
-      size: '2.0 MB',
-      popular: false
-    },
-    {
-      id: 8,
-      exam: 'RRB Group D',
-      category: 'railway',
-      year: '2023',
-      subject: 'General Knowledge',
-      questions: 75,
-      downloads: 13500,
-      difficulty: 'Easy',
-      size: '1.7 MB',
-      popular: true
-    },
-  ];
+  // Load exams for category filter
+  useEffect(() => {
+    examApi.getAll({ limit: 50 })
+      .then(({ data }) => setExams(data.data))
+      .catch(() => {});
+  }, []);
+
+  // Load PYQs
+  useEffect(() => {
+    setLoading(true);
+    const params: any = { page, limit: 30 };
+    if (selectedExam !== 'all') {
+      const exam = exams.find(e => e.category === selectedExam);
+      if (exam) params.examId = exam._id;
+    }
+    if (selectedYear !== 'all') params.year = selectedYear;
+
+    apiClient.get('/pyqs', { params })
+      .then(({ data }) => {
+        setPyqs(data.data || []);
+        setTotalPages(data.pagination?.totalPages || 1);
+      })
+      .catch(() => toast.error('Failed to load PYQs'))
+      .finally(() => setLoading(false));
+  }, [selectedExam, selectedYear, page, exams]);
 
   const stats = [
-    { value: '1,500+', label: 'Free PYQs', icon: FileText, color: '#2E5CFF' },
+    { value: pyqs.length + '+', label: 'Free PYQs', icon: FileText, color: '#2E5CFF' },
     { value: '250K+', label: 'Downloads', icon: Download, color: '#10B981' },
-    { value: '50+', label: 'Exams Covered', icon: Award, color: '#FF6B35' },
+    { value: exams.length + '+', label: 'Exams Covered', icon: Award, color: '#FF6B35' },
     { value: '100%', label: 'Free Forever', icon: Zap, color: '#8B5CF6' },
   ];
 
@@ -182,15 +137,15 @@ const FreePYQs = () => {
   ];
 
   // Filter logic
-  const filteredPYQs = pyqData.filter(pyq => {
-    const matchesExam = selectedExam === 'all' || pyq.category === selectedExam;
-    const matchesYear = selectedYear === 'all' || pyq.year === selectedYear;
-    const matchesSubject = selectedSubject === 'all' || pyq.subject.toLowerCase().replace(' ', '-') === selectedSubject;
+  const filteredPYQs = pyqs.filter(pyq => {
+    const matchesSubject = selectedSubject === 'all' || 
+      pyq.subjects.some(s => s.toLowerCase().replace(' ', '-') === selectedSubject);
     const matchesSearch = searchQuery === '' || 
-      pyq.exam.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      pyq.subject.toLowerCase().includes(searchQuery.toLowerCase());
+      pyq.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      pyq.exam.shortName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      pyq.subjects.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()));
     
-    return matchesExam && matchesYear && matchesSubject && matchesSearch;
+    return matchesSubject && matchesSearch;
   });
 
   const getDifficultyColor = (difficulty: string) => {
@@ -204,8 +159,7 @@ const FreePYQs = () => {
 
   return (
     <>
-      <Navbar />
-      <div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden pt-[124px]">
+      <div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden">
         {/* Grain Overlay */}
         <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-50 mix-blend-multiply">
           <div className="absolute inset-0 bg-noise"></div>
@@ -314,7 +268,9 @@ const FreePYQs = () => {
                 <div className="font-black text-sm mb-1" style={{ color: category.color }}>
                   {category.name}
                 </div>
-                <div className="text-xs text-gray-600 font-bold">{category.count} PYQs</div>
+                <div className="text-xs text-gray-600 font-bold">
+                  {category.id === 'all' ? pyqs.length : exams.filter(e => e.category === category.id).length} PYQs
+                </div>
               </button>
             ))}
           </div>
@@ -403,7 +359,11 @@ const FreePYQs = () => {
             </div>
           </div>
 
-          {filteredPYQs.length === 0 ? (
+          {loading ? (
+            <div className="flex justify-center py-20">
+              <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+            </div>
+          ) : filteredPYQs.length === 0 ? (
             <div className="bg-white border-4 border-black rounded-xl p-12 text-center">
               <FileText className="w-16 h-16 mx-auto mb-4 text-gray-400" />
               <h3 className="text-2xl font-black text-black mb-2">No Papers Found</h3>
@@ -426,10 +386,10 @@ const FreePYQs = () => {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredPYQs.map((pyq) => (
                 <div
-                  key={pyq.id}
+                  key={pyq._id}
                   className="bg-white border-4 border-black rounded-xl p-6 hover:scale-105 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative"
                 >
-                  {pyq.popular && (
+                  {pyq.downloadCount > 10000 && (
                     <div className="absolute -top-3 -right-3 px-3 py-1 bg-yellow-400 text-black font-black text-xs rounded-full border-2 border-black rotate-12">
                       ⭐ POPULAR
                     </div>
@@ -437,15 +397,12 @@ const FreePYQs = () => {
 
                   <div className="mb-4">
                     <div className="flex items-start justify-between mb-2">
-                      <h4 className="text-xl font-black text-black">{pyq.exam}</h4>
-                      <span 
-                        className="px-2 py-1 text-white text-xs font-black rounded-full border-2 border-black"
-                        style={{ backgroundColor: getDifficultyColor(pyq.difficulty) }}
-                      >
-                        {pyq.difficulty}
+                      <h4 className="text-xl font-black text-black">{pyq.exam.shortName}</h4>
+                      <span className="px-2 py-1 bg-blue-500 text-white text-xs font-black rounded-full border-2 border-black">
+                        {pyq.year}
                       </span>
                     </div>
-                    <div className="text-sm text-gray-600 font-medium">{pyq.subject}</div>
+                    <div className="text-sm text-gray-600 font-medium">{pyq.title}</div>
                   </div>
 
                   <div className="space-y-2 mb-4">
@@ -455,22 +412,37 @@ const FreePYQs = () => {
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600 font-medium">Questions:</span>
-                      <span className="font-black text-black">{pyq.questions}</span>
+                      <span className="font-black text-black">{pyq.totalQuestions}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600 font-medium">Size:</span>
-                      <span className="font-black text-black">{pyq.size}</span>
+                      <span className="text-gray-600 font-medium">Duration:</span>
+                      <span className="font-black text-black">{pyq.duration} min</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600 font-medium">Downloads:</span>
-                      <span className="font-black text-blue-600">{pyq.downloads.toLocaleString()}</span>
+                      <span className="font-black text-blue-600">{pyq.downloadCount.toLocaleString()}</span>
                     </div>
                   </div>
 
-                  <button className="w-full py-3 bg-black text-white font-black text-sm uppercase border-4 border-black hover:bg-gradient-to-r hover:from-blue-600 hover:to-purple-600 transition-all duration-300 flex items-center justify-center gap-2">
-                    <Download className="w-5 h-5" />
-                    Download Free
-                  </button>
+                  {pyq.pdfUrl ? (
+                    <a
+                      href={pyq.pdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-3 bg-black text-white font-black text-sm uppercase border-4 border-black hover:bg-gradient-to-r hover:from-blue-600 hover:to-purple-600 transition-all duration-300 flex items-center justify-center gap-2"
+                    >
+                      <Download className="w-5 h-5" />
+                      Download Free
+                    </a>
+                  ) : (
+                    <Link
+                      to={`/mock-tests?pyq=${pyq._id}`}
+                      className="w-full py-3 bg-black text-white font-black text-sm uppercase border-4 border-black hover:bg-gradient-to-r hover:from-blue-600 hover:to-purple-600 transition-all duration-300 flex items-center justify-center gap-2"
+                    >
+                      <BookOpen className="w-5 h-5" />
+                      Practice Online
+                    </Link>
+                  )}
                 </div>
               ))}
             </div>
@@ -570,7 +542,6 @@ const FreePYQs = () => {
           }
         `}</style>
       </div>
-      <Footer />
     </>
   );
 };

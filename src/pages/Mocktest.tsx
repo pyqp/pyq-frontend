@@ -1,126 +1,104 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { 
-  Target, CheckCircle, Brain,
-  ChevronRight, Star, Shield, BarChart, Users,
-  ArrowRight, Trophy, Timer, FileText
+  Target, CheckCircle, Brain, ChevronRight, Star, Shield, BarChart, Users,
+  Trophy, Timer, FileText, Loader2
 } from 'lucide-react';
-import Navbar from '../../src/pages/Navbar';
-import Footer from '../../src/pages/Footer';
+import { mockTestApi, type MockTestSummary } from '../api/Mocktest.api';
+import { packageApi, type Package } from '../api/Package.api';
+import { examApi, type Exam } from '../api/Exam.api';
+import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
-const MockTest = () => {
-  const [selectedExam, setSelectedExam] = useState<string | null>(null);
-  const [selectedPlan, setSelectedPlan] = useState<string>('5-tests');
+function getCategoryIcon(category: string): string {
+  const icons: Record<string, string> = {
+    'Railway': '🚂',
+    'UPSC': '🏛️',
+    'SSC': '📋',
+    'Banking': '🏦',
+    'Defence': '⚔️',
+    'Teaching': '📚',
+    'Police': '👮',
+    'State': '🗺️'
+  };
+  return icons[category] || '📄';
+}
 
-  const pricingPlans = [
-    {
-      id: '1-test',
-      tests: 1,
-      price: 199,
-      originalPrice: 199,
-      savings: 0,
-      badge: 'Trial',
-      popular: false,
-      color: '#8B5CF6',
-      features: [
-        'Access to 1 mock test',
-        'Detailed performance report',
-        'Answer key with solutions',
-        'Valid for 30 days'
-      ]
-    },
-    {
-      id: '5-tests',
-      tests: 5,
-      price: 499,
-      originalPrice: 995,
-      savings: 496,
-      badge: 'Best Value',
-      popular: true,
-      color: '#FF6B35',
-      features: [
-        'Access to 5 mock tests',
-        'Advanced analytics dashboard',
-        'All India rank comparison',
-        'Expert video solutions',
-        'Valid for 90 days'
-      ]
-    },
-    {
-      id: '10-tests',
-      tests: 10,
-      price: 799,
-      originalPrice: 1990,
-      savings: 1191,
-      badge: 'Max Value',
-      popular: false,
-      color: '#10B981',
-      features: [
-        'Access to 10 mock tests',
-        'Premium analytics & insights',
-        'All India rank tracking',
-        'Personalized improvement plan',
-        'Expert doubt resolution',
-        'Valid for 180 days'
-      ]
+function getCategoryColor(category: string): string {
+  const colors: Record<string, string> = {
+    'Railway': '#FF6B35',
+    'UPSC': '#2E5CFF',
+    'SSC': '#8B5CF6',
+    'Banking': '#10B981',
+    'Defence': '#DC2626',
+    'Teaching': '#0891B2',
+    'Police': '#6366F1',
+    'State': '#14B8A6'
+  };
+  return colors[category] || '#6B7280';
+}
+
+const MockTests = () => {
+  const { user } = useAuth();
+  
+  const [mockTests, setMockTests] = useState<MockTestSummary[]>([]);
+  const [packages, setPackages] = useState<Package[]>([]);
+  const [exams, setExams] = useState<Exam[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+
+  // Load data
+  useEffect(() => {
+    Promise.all([
+      mockTestApi.getAll({ page: 1, limit: 50 }),
+      packageApi.getAll(),
+      examApi.getAll({ limit: 20 })
+    ])
+      .then(([testsRes, pkgsRes, examsRes]) => {
+        setMockTests(testsRes.data.data || []);
+        setPackages(pkgsRes.data.data || []);
+        setExams(examsRes.data.data || []);
+      })
+      .catch(() => toast.error('Failed to load data'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Group tests by category using exams data
+  const examCategories = exams.reduce((acc: any[], exam) => {
+    const existing = acc.find(c => c.id === exam.category);
+    // Count tests that belong to this exam (by matching exam._id)
+    const testsInCategory = mockTests.filter(t => 
+      exams.find(e => e._id === t.exam._id && e.category === exam.category)
+    ).length;
+    
+    if (existing) {
+      existing.tests = testsInCategory;
+      if (!existing.exams.includes(exam.shortName)) {
+        existing.exams.push(exam.shortName);
+      }
+    } else {
+      acc.push({
+        id: exam.category,
+        name: exam.category,
+        icon: getCategoryIcon(exam.category),
+        color: getCategoryColor(exam.category),
+        tests: testsInCategory,
+        exams: [exam.shortName],
+        popular: ['Railway', 'UPSC', 'SSC'].includes(exam.category)
+      });
     }
-  ];
+    return acc;
+  }, []);
 
-  const examCategories = [
-    {
-      id: 'railway',
-      name: 'Railway',
-      icon: '🚂',
-      color: '#FF6B35',
-      tests: 25,
-      exams: ['RRB NTPC', 'RRB Group D', 'RRB JE', 'RRB ALP'],
-      popular: true
-    },
-    {
-      id: 'upsc',
-      name: 'UPSC',
-      icon: '🏛️',
-      color: '#2E5CFF',
-      tests: 30,
-      exams: ['UPSC CSE', 'UPSC CDS', 'UPSC NDA', 'UPSC CAPF'],
-      popular: true
-    },
-    {
-      id: 'ssc',
-      name: 'SSC',
-      icon: '📋',
-      color: '#8B5CF6',
-      tests: 35,
-      exams: ['SSC CGL', 'SSC CHSL', 'SSC MTS', 'SSC CPO'],
-      popular: true
-    },
-    {
-      id: 'banking',
-      name: 'Banking',
-      icon: '🏦',
-      color: '#10B981',
-      tests: 28,
-      exams: ['IBPS PO', 'SBI PO', 'RBI Grade B', 'IBPS Clerk'],
-      popular: false
-    },
-    {
-      id: 'defence',
-      name: 'Defence',
-      icon: '⚔️',
-      color: '#DC2626',
-      tests: 20,
-      exams: ['NDA', 'CDS', 'AFCAT', 'Army GD'],
-      popular: false
-    },
-    {
-      id: 'teaching',
-      name: 'Teaching',
-      icon: '📚',
-      color: '#0891B2',
-      tests: 22,
-      exams: ['CTET', 'UGC NET', 'KVS', 'DSSSB'],
-      popular: false
-    }
-  ];
+  // Create exam ID to category map for filtering
+  const examCategoryMap = exams.reduce((map, exam) => {
+    map[exam._id] = exam.category;
+    return map;
+  }, {} as Record<string, string>);
+
+  const filteredTests = selectedCategory === 'all' 
+    ? mockTests 
+    : mockTests.filter(t => examCategoryMap[t.exam._id] === selectedCategory);
 
   const features = [
     {
@@ -157,7 +135,7 @@ const MockTest = () => {
     'Sectional & overall time analysis',
     'Identify weak areas instantly',
     'Mobile & desktop compatible',
-    'Attempt tests unlimited times'
+    'Unlimited attempts with credits'
   ];
 
   const testimonials = [
@@ -188,17 +166,14 @@ const MockTest = () => {
   ];
 
   const stats = [
-    { value: '50K+', label: 'Tests Attempted Daily', icon: FileText },
+    { value: mockTests.length + '+', label: 'Mock Tests', icon: FileText },
     { value: '98%', label: 'Selection Rate', icon: Trophy },
     { value: '4.9/5', label: 'Average Rating', icon: Star },
-    { value: '250K+', label: 'Active Users', icon: Users }
+    { value: user ? `${user.credits || 0}` : '0', label: 'Your Credits', icon: Users }
   ];
 
   return (
-    <>
-    <Navbar/>
-    <div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden pt-[124px]">
-      {/* pt-[124px] = 44px announcement + 80px navbar */}
+    <div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden">
       {/* Grain Overlay */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-50 mix-blend-multiply">
         <div className="absolute inset-0 bg-noise"></div>
@@ -206,13 +181,11 @@ const MockTest = () => {
 
       {/* Hero Section */}
       <section className="relative bg-black py-20 md:py-32 overflow-hidden">
-        {/* Animated Background */}
         <div className="absolute inset-0 opacity-20">
           <div className="absolute inset-0 bg-grid-pattern"></div>
           <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-pink-600/20"></div>
         </div>
 
-        {/* Floating Elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="floating-element absolute top-20 left-10 w-64 h-64 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full opacity-20 blur-3xl"></div>
           <div className="floating-element-delayed absolute bottom-20 right-10 w-72 h-72 bg-gradient-to-br from-pink-500 to-orange-500 rounded-full opacity-20 blur-3xl"></div>
@@ -240,9 +213,9 @@ const MockTest = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="px-10 py-5 bg-white text-black font-black text-xl rounded-none border-4 border-white shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:translate-x-1 hover:translate-y-1 transition-all duration-200 uppercase">
+              <Link to="/pricing" className="px-10 py-5 bg-white text-black font-black text-xl rounded-none border-4 border-white shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:translate-x-1 hover:translate-y-1 transition-all duration-200 uppercase">
                 View Pricing
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -270,62 +243,141 @@ const MockTest = () => {
           <h2 className="text-4xl md:text-5xl font-black text-black mb-4">
             Choose Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Exam</span>
           </h2>
-          <p className="text-xl text-gray-600 font-medium">Select from 50+ competitive exams</p>
+          <p className="text-xl text-gray-600 font-medium">Select from {exams.length}+ competitive exams</p>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {examCategories.map((exam) => (
-            <div
-              key={exam.id}
-              onClick={() => setSelectedExam(exam.id)}
-              className={`relative p-6 border-4 rounded-xl cursor-pointer transition-all duration-300 ${
-                selectedExam === exam.id
-                  ? 'border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] scale-105'
-                  : 'border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:scale-102'
-              }`}
-              style={{ backgroundColor: selectedExam === exam.id ? exam.color + '20' : 'white' }}
-            >
-              {exam.popular && (
-                <div className="absolute -top-3 -right-3 px-3 py-1 bg-red-500 text-white font-black text-xs rounded-full border-2 border-black rotate-12">
-                  HOT
-                </div>
-              )}
-              
-              <div className="flex items-start justify-between mb-4">
-                <div className="text-5xl">{exam.icon}</div>
-                <div className="text-right">
-                  <div className="text-2xl font-black" style={{ color: exam.color }}>{exam.tests}</div>
-                  <div className="text-xs font-bold text-gray-600 uppercase">Tests</div>
-                </div>
-              </div>
-
-              <h3 className="text-2xl font-black text-black mb-2">{exam.name}</h3>
-              
-              <div className="flex flex-wrap gap-2 mb-4">
-                {exam.exams.slice(0, 2).map((subExam) => (
-                  <span
-                    key={subExam}
-                    className="px-2 py-1 bg-gray-100 border-2 border-black rounded-md text-xs font-bold"
-                  >
-                    {subExam}
-                  </span>
-                ))}
-                {exam.exams.length > 2 && (
-                  <span className="px-2 py-1 text-xs font-bold text-gray-600">
-                    +{exam.exams.length - 2} more
-                  </span>
-                )}
-              </div>
-
-              <button
-                className="w-full py-3 bg-black text-white font-black text-sm uppercase border-2 border-black hover:bg-white hover:text-black transition-all duration-200 flex items-center justify-center gap-2"
+        {loading ? (
+          <div className="flex justify-center py-20">
+            <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+          </div>
+        ) : (
+          <>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+              <div
+                onClick={() => setSelectedCategory('all')}
+                className={`relative p-6 border-4 rounded-xl cursor-pointer transition-all duration-300 ${
+                  selectedCategory === 'all'
+                    ? 'border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] scale-105 bg-blue-50'
+                    : 'border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:scale-102 bg-white'
+                }`}
               >
-                View Tests
-                <ChevronRight className="w-4 h-4" />
-              </button>
+                <div className="flex items-start justify-between mb-4">
+                  <div className="text-5xl">📚</div>
+                  <div className="text-right">
+                    <div className="text-2xl font-black text-blue-600">{mockTests.length}</div>
+                    <div className="text-xs font-bold text-gray-600 uppercase">All Tests</div>
+                  </div>
+                </div>
+                <h3 className="text-2xl font-black text-black mb-2">All Categories</h3>
+                <button className="w-full py-3 bg-black text-white font-black text-sm uppercase border-2 border-black hover:bg-white hover:text-black transition-all duration-200 flex items-center justify-center gap-2">
+                  View All
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+
+              {examCategories.map((exam: any) => (
+                <div
+                  key={exam.id}
+                  onClick={() => setSelectedCategory(exam.id)}
+                  className={`relative p-6 border-4 rounded-xl cursor-pointer transition-all duration-300 ${
+                    selectedCategory === exam.id
+                      ? 'border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] scale-105'
+                      : 'border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:scale-102'
+                  }`}
+                  style={{ backgroundColor: selectedCategory === exam.id ? exam.color + '20' : 'white' }}
+                >
+                  {exam.popular && (
+                    <div className="absolute -top-3 -right-3 px-3 py-1 bg-red-500 text-white font-black text-xs rounded-full border-2 border-black rotate-12">
+                      HOT
+                    </div>
+                  )}
+                  
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="text-5xl">{exam.icon}</div>
+                    <div className="text-right">
+                      <div className="text-2xl font-black" style={{ color: exam.color }}>{exam.tests}</div>
+                      <div className="text-xs font-bold text-gray-600 uppercase">Tests</div>
+                    </div>
+                  </div>
+
+                  <h3 className="text-2xl font-black text-black mb-2">{exam.name}</h3>
+                  
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {exam.exams.slice(0, 2).map((subExam: string) => (
+                      <span
+                        key={subExam}
+                        className="px-2 py-1 bg-gray-100 border-2 border-black rounded-md text-xs font-bold"
+                      >
+                        {subExam}
+                      </span>
+                    ))}
+                    {exam.exams.length > 2 && (
+                      <span className="px-2 py-1 text-xs font-bold text-gray-600">
+                        +{exam.exams.length - 2} more
+                      </span>
+                    )}
+                  </div>
+
+                  <button className="w-full py-3 bg-black text-white font-black text-sm uppercase border-2 border-black hover:bg-white hover:text-black transition-all duration-200 flex items-center justify-center gap-2">
+                    View Tests
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+
+            {/* Test List */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredTests.slice(0, 6).map((test) => {
+                const testCategory = examCategoryMap[test.exam._id] || 'General';
+                return (
+                  <Link
+                    key={test._id}
+                    to={`/mock-tests/${test._id}`}
+                    className="bg-white border-4 border-black rounded-xl p-6 hover:scale-105 transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <span className="px-3 py-1 bg-purple-100 border-2 border-purple-600 text-purple-800 text-xs font-black uppercase rounded-full">
+                        {testCategory}
+                      </span>
+                      <span className="px-2 py-1 bg-yellow-400 border-2 border-black text-xs font-black rounded-full">
+                        {test.difficulty}
+                      </span>
+                    </div>
+
+                    <h3 className="text-xl font-black text-black mb-2 line-clamp-2">{test.name}</h3>
+                    <p className="text-sm text-gray-600 font-medium mb-4">{test.exam.shortName}</p>
+
+                    <div className="grid grid-cols-3 gap-2 mb-4">
+                      <div className="text-center p-2 bg-gray-50 border-2 border-gray-200 rounded">
+                        <div className="text-xs text-gray-500">Questions</div>
+                        <div className="font-black text-sm">{test.totalQuestions}</div>
+                      </div>
+                      <div className="text-center p-2 bg-gray-50 border-2 border-gray-200 rounded">
+                        <div className="text-xs text-gray-500">Duration</div>
+                        <div className="font-black text-sm">{test.duration}m</div>
+                      </div>
+                      <div className="text-center p-2 bg-gray-50 border-2 border-gray-200 rounded">
+                        <div className="text-xs text-gray-500">Marks</div>
+                        <div className="font-black text-sm">{test.totalMarks}</div>
+                      </div>
+                    </div>
+
+                    <button className="w-full py-3 bg-black text-white font-black text-sm uppercase border-2 border-black hover:bg-blue-600 transition-all">
+                      View Details →
+                    </button>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {filteredTests.length > 6 && (
+              <div className="text-center mt-8">
+                <p className="text-gray-600 font-bold">Showing 6 of {filteredTests.length} tests</p>
+              </div>
+            )}
+          </>
+        )}
       </section>
 
       {/* Pricing Section */}
@@ -339,80 +391,50 @@ const MockTest = () => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mb-12">
-            {pricingPlans.map((plan) => (
+            {packages.map((pkg, idx) => (
               <div
-                key={plan.id}
-                onClick={() => setSelectedPlan(plan.id)}
-                className={`relative bg-white border-4 border-black rounded-2xl p-8 cursor-pointer transition-all duration-300 ${
-                  plan.popular ? 'transform scale-105 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]' : 'shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]'
-                } ${selectedPlan === plan.id ? 'ring-4 ring-offset-4' : ''} hover:scale-105`}
-                style={{ 
-                  outlineColor: selectedPlan === plan.id ? plan.color : 'transparent',
-                  outlineStyle: selectedPlan === plan.id ? 'solid' : 'none',
-                  outlineWidth: selectedPlan === plan.id ? '4px' : '0px',
-                  outlineOffset: '4px'
-                }}
+                key={pkg._id}
+                className={`relative bg-white border-4 border-black rounded-2xl p-8 transition-all duration-300 ${
+                  idx === 1 ? 'transform scale-105 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]' : 'shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]'
+                } hover:scale-105`}
               >
-                {plan.popular && (
-                  <div 
-                    className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-2 text-white font-black text-sm uppercase border-4 border-black rotate-[-2deg]"
-                    style={{ backgroundColor: plan.color }}
-                  >
-                    {plan.badge}
+                {idx === 1 && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-orange-500 text-white font-black text-sm uppercase border-4 border-black rotate-[-2deg]">
+                    Best Value
                   </div>
                 )}
 
                 <div className="text-center mb-6">
-                  <div className="text-6xl font-black text-black mb-2">{plan.tests}</div>
-                  <div className="text-xl font-bold text-gray-600 uppercase mb-4">Mock Tests</div>
+                  <div className="text-6xl font-black text-black mb-2">{pkg.credits}</div>
+                  <div className="text-xl font-bold text-gray-600 uppercase mb-4">Credits</div>
                   
                   <div className="flex items-center justify-center gap-2 mb-2">
-                    <span className="text-5xl font-black text-black">₹{plan.price}</span>
+                    <span className="text-5xl font-black text-black">₹{pkg.price}</span>
                   </div>
                   
-                  {plan.savings > 0 && (
-                    <div className="flex items-center justify-center gap-2">
-                      <span className="text-gray-400 line-through text-lg">₹{plan.originalPrice}</span>
-                      <span className="px-2 py-1 bg-green-400 text-black font-black text-xs rounded-full border-2 border-black">
-                        Save ₹{plan.savings}
-                      </span>
-                    </div>
-                  )}
+                  <div className="text-sm text-gray-500 font-medium">Valid for {pkg.validityDays} days</div>
                 </div>
 
                 <div className="space-y-3 mb-6">
-                  {plan.features.map((feature, idx) => (
+                  {pkg.features.map((feature, idx) => (
                     <div key={idx} className="flex items-start gap-2">
-                      <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: plan.color }} />
+                      <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-green-600" />
                       <span className="text-sm font-medium text-gray-700">{feature}</span>
                     </div>
                   ))}
                 </div>
 
-                <button
-                  className="w-full py-4 font-black text-lg uppercase border-4 border-black transition-all duration-200 flex items-center justify-center gap-2"
-                  style={{
-                    backgroundColor: selectedPlan === plan.id ? plan.color : 'black',
-                    color: selectedPlan === plan.id ? 'black' : 'white',
-                    boxShadow: '6px 6px 0px 0px rgba(0,0,0,1)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.boxShadow = '3px 3px 0px 0px rgba(0,0,0,1)';
-                    e.currentTarget.style.transform = 'translate(3px, 3px)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.boxShadow = '6px 6px 0px 0px rgba(0,0,0,1)';
-                    e.currentTarget.style.transform = 'translate(0, 0)';
-                  }}
+                <Link
+                  to="/pricing"
+                  className="block w-full py-4 bg-black text-white font-black text-lg uppercase border-4 border-black hover:bg-blue-600 transition-all duration-200 text-center"
+                  style={{ boxShadow: '6px 6px 0px 0px rgba(0,0,0,1)' }}
                 >
-                  {selectedPlan === plan.id ? 'Selected' : 'Choose Plan'}
-                  <ArrowRight className="w-6 h-6" />
-                </button>
+                  Choose Plan
+                </Link>
               </div>
             ))}
           </div>
 
-          {/* Money Back Guarantee */}
           <div className="max-w-2xl mx-auto p-6 bg-green-100 border-4 border-green-600 rounded-xl text-center">
             <div className="flex items-center justify-center gap-3 mb-2">
               <Shield className="w-8 h-8 text-green-600" />
@@ -452,7 +474,6 @@ const MockTest = () => {
           ))}
         </div>
 
-        {/* Benefits Grid */}
         <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
           {benefits.map((benefit, idx) => (
             <div
@@ -521,15 +542,12 @@ const MockTest = () => {
             <span className="text-yellow-400">TODAY</span>
           </h2>
           <p className="text-xl md:text-2xl text-white/90 font-bold mb-8 max-w-2xl mx-auto">
-            Join 250,000+ students who trust us for their exam preparation
+            Join thousands of students who trust us for their exam preparation
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="px-10 py-5 bg-white text-black font-black text-xl rounded-none border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 transition-all duration-200 uppercase">
+            <Link to="/pricing" className="px-10 py-5 bg-white text-black font-black text-xl rounded-none border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 transition-all duration-200 uppercase">
               Buy Mock Tests
-            </button>
-            <button className="px-10 py-5 bg-black text-white font-black text-xl rounded-none border-4 border-white hover:bg-white hover:text-black transition-all duration-300 uppercase">
-              Try Free Demo
-            </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -584,9 +602,7 @@ const MockTest = () => {
         }
       `}</style>
     </div>
-    <Footer/>
-    </>
   );
 };
 
-export default MockTest;
+export default MockTests;

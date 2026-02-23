@@ -1,11 +1,30 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Search, Filter, X, BookOpen, Users, 
   TrendingUp, Award, FileText, Target, Zap,
-  Clock, ArrowRight, Sparkles
+  Clock, ArrowRight, Sparkles, Loader2
 } from 'lucide-react';
-import Navbar from './Navbar';
-import Footer from './Footer';
+import apiClient from '../api/Client';
+import toast from 'react-hot-toast';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface Exam {
+  _id: string;
+  name: string;
+  shortName: string;
+  category: string;
+  description: string;
+  logo?: string;
+  conductedBy: string;
+  examLevel: string;
+  examPattern: {
+    totalMarks: number;
+    duration: number;
+    totalQuestions: number;
+  };
+  popularity: number;
+  isActive: boolean;
+}
 
 const AllExams = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -13,294 +32,57 @@ const AllExams = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
   const [selectedPopularity, setSelectedPopularity] = useState<string>('all');
+  const [exams, setExams] = useState<Exam[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const categories = [
-    { id: 'all', name: 'All Exams', icon: '📚', color: '#6B7280', count: 50 },
-    { id: 'railway', name: 'Railway', icon: '🚂', color: '#FF6B35', count: 8 },
-    { id: 'upsc', name: 'UPSC', icon: '🏛️', color: '#2E5CFF', count: 6 },
-    { id: 'ssc', name: 'SSC', icon: '📋', color: '#8B5CF6', count: 9 },
-    { id: 'banking', name: 'Banking', icon: '🏦', color: '#10B981', count: 12 },
-    { id: 'defence', name: 'Defence', icon: '⚔️', color: '#DC2626', count: 7 },
-    { id: 'teaching', name: 'Teaching', icon: '📚', color: '#0891B2', count: 8 },
-  ];
-
-  const exams = [
-    {
-      id: 1,
-      name: 'SSC CGL',
-      fullName: 'Staff Selection Commission Combined Graduate Level',
-      category: 'ssc',
-      categoryName: 'SSC',
-      icon: '📋',
-      color: '#8B5CF6',
-      level: 'Graduate',
-      posts: '8000+',
-      aspirants: '25 Lakh+',
-      examDate: 'July 2024',
-      difficulty: 'Medium',
-      avgSalary: '₹44,900',
-      popular: true,
-      trending: true,
-      pyqs: 120,
-      mockTests: 35,
-      description: 'One of the most sought-after exams for central government jobs'
-    },
-    {
-      id: 2,
-      name: 'RRB NTPC',
-      fullName: 'Railway Non-Technical Popular Categories',
-      category: 'railway',
-      categoryName: 'Railway',
-      icon: '🚂',
-      color: '#FF6B35',
-      level: 'Graduate',
-      posts: '35,000+',
-      aspirants: '1.2 Crore+',
-      examDate: 'Sep 2024',
-      difficulty: 'Easy',
-      avgSalary: '₹35,400',
-      popular: true,
-      trending: true,
-      pyqs: 95,
-      mockTests: 28,
-      description: 'Largest recruitment in Indian Railways for various posts'
-    },
-    {
-      id: 3,
-      name: 'UPSC CSE',
-      fullName: 'Civil Services Examination',
-      category: 'upsc',
-      categoryName: 'UPSC',
-      icon: '🏛️',
-      color: '#2E5CFF',
-      level: 'Graduate',
-      posts: '1000+',
-      aspirants: '10 Lakh+',
-      examDate: 'June 2024',
-      difficulty: 'Hard',
-      avgSalary: '₹56,100',
-      popular: true,
-      trending: true,
-      pyqs: 180,
-      mockTests: 42,
-      description: 'India\'s most prestigious exam for IAS, IPS, IFS officers'
-    },
-    {
-      id: 4,
-      name: 'IBPS PO',
-      fullName: 'Institute of Banking Personnel Selection Probationary Officer',
-      category: 'banking',
-      categoryName: 'Banking',
-      icon: '🏦',
-      color: '#10B981',
-      level: 'Graduate',
-      posts: '4000+',
-      aspirants: '15 Lakh+',
-      examDate: 'Oct 2024',
-      difficulty: 'Medium',
-      avgSalary: '₹57,000',
-      popular: true,
-      trending: false,
-      pyqs: 110,
-      mockTests: 32,
-      description: 'Recruitment for Probationary Officers in Public Sector Banks'
-    },
-    {
-      id: 5,
-      name: 'NDA',
-      fullName: 'National Defence Academy',
-      category: 'defence',
-      categoryName: 'Defence',
-      icon: '⚔️',
-      color: '#DC2626',
-      level: '12th Pass',
-      posts: '400+',
-      aspirants: '6 Lakh+',
-      examDate: 'Apr 2024',
-      difficulty: 'Hard',
-      avgSalary: '₹56,100',
-      popular: true,
-      trending: true,
-      pyqs: 145,
-      mockTests: 38,
-      description: 'Joint training academy for Army, Navy, and Air Force'
-    },
-    {
-      id: 6,
-      name: 'CTET',
-      fullName: 'Central Teacher Eligibility Test',
-      category: 'teaching',
-      categoryName: 'Teaching',
-      icon: '📚',
-      color: '#0891B2',
-      level: '12th/Graduate',
-      posts: 'N/A',
-      aspirants: '30 Lakh+',
-      examDate: 'Dec 2024',
-      difficulty: 'Easy',
-      avgSalary: '₹44,900',
-      popular: true,
-      trending: false,
-      pyqs: 88,
-      mockTests: 25,
-      description: 'Mandatory certificate for teaching in central government schools'
-    },
-    {
-      id: 7,
-      name: 'SSC CHSL',
-      fullName: 'Combined Higher Secondary Level',
-      category: 'ssc',
-      categoryName: 'SSC',
-      icon: '📋',
-      color: '#8B5CF6',
-      level: '12th Pass',
-      posts: '4500+',
-      aspirants: '20 Lakh+',
-      examDate: 'Aug 2024',
-      difficulty: 'Easy',
-      avgSalary: '₹25,500',
-      popular: true,
-      trending: false,
-      pyqs: 102,
-      mockTests: 28,
-      description: 'Recruitment for Lower Division Clerk, Data Entry Operator'
-    },
-    {
-      id: 8,
-      name: 'RRB Group D',
-      fullName: 'Railway Recruitment Board Group D',
-      category: 'railway',
-      categoryName: 'Railway',
-      icon: '🚂',
-      color: '#FF6B35',
-      level: '10th Pass',
-      posts: '1,03,000+',
-      aspirants: '1.5 Crore+',
-      examDate: 'Aug 2024',
-      difficulty: 'Easy',
-      avgSalary: '₹18,000',
-      popular: true,
-      trending: true,
-      pyqs: 78,
-      mockTests: 22,
-      description: 'Largest recruitment for Track Maintainer, Helper, Porter'
-    },
-    {
-      id: 9,
-      name: 'SBI PO',
-      fullName: 'State Bank of India Probationary Officer',
-      category: 'banking',
-      categoryName: 'Banking',
-      icon: '🏦',
-      color: '#10B981',
-      level: 'Graduate',
-      posts: '2000+',
-      aspirants: '12 Lakh+',
-      examDate: 'Nov 2024',
-      difficulty: 'Hard',
-      avgSalary: '₹57,000',
-      popular: true,
-      trending: true,
-      pyqs: 125,
-      mockTests: 35,
-      description: 'Recruitment for PO in India\'s largest public sector bank'
-    },
-    {
-      id: 10,
-      name: 'CDS',
-      fullName: 'Combined Defence Services',
-      category: 'defence',
-      categoryName: 'Defence',
-      icon: '⚔️',
-      color: '#DC2626',
-      level: 'Graduate',
-      posts: '450+',
-      aspirants: '5 Lakh+',
-      examDate: 'Apr 2024',
-      difficulty: 'Medium',
-      avgSalary: '₹56,100',
-      popular: false,
-      trending: false,
-      pyqs: 132,
-      mockTests: 30,
-      description: 'For recruitment to Indian Military Academy, Naval Academy'
-    },
-    {
-      id: 11,
-      name: 'UPSC NDA',
-      fullName: 'National Defence Academy & Naval Academy',
-      category: 'upsc',
-      categoryName: 'UPSC',
-      icon: '🏛️',
-      color: '#2E5CFF',
-      level: '12th Pass',
-      posts: '400+',
-      aspirants: '6 Lakh+',
-      examDate: 'Apr 2024',
-      difficulty: 'Hard',
-      avgSalary: '₹56,100',
-      popular: false,
-      trending: false,
-      pyqs: 145,
-      mockTests: 38,
-      description: 'Gateway to join Indian Armed Forces as an officer'
-    },
-    {
-      id: 12,
-      name: 'UGC NET',
-      fullName: 'University Grants Commission National Eligibility Test',
-      category: 'teaching',
-      categoryName: 'Teaching',
-      icon: '📚',
-      color: '#0891B2',
-      level: 'Post Graduate',
-      posts: 'N/A',
-      aspirants: '10 Lakh+',
-      examDate: 'Dec 2024',
-      difficulty: 'Hard',
-      avgSalary: '₹57,700',
-      popular: false,
-      trending: false,
-      pyqs: 156,
-      mockTests: 42,
-      description: 'For Assistant Professor and Junior Research Fellowship'
-    },
+    { id: 'all', name: 'All Exams', icon: '📚', color: '#6B7280', count: 0 },
+    { id: 'Railway', name: 'Railway', icon: '🚂', color: '#FF6B35', count: 0 },
+    { id: 'UPSC', name: 'UPSC', icon: '🏛️', color: '#2E5CFF', count: 0 },
+    { id: 'SSC', name: 'SSC', icon: '📋', color: '#8B5CF6', count: 0 },
+    { id: 'Banking', name: 'Banking', icon: '🏦', color: '#10B981', count: 0 },
+    { id: 'Defence', name: 'Defence', icon: '⚔️', color: '#DC2626', count: 0 },
+    { id: 'Teaching', name: 'Teaching', icon: '📚', color: '#0891B2', count: 0 },
   ];
 
   const stats = [
-    { value: '50+', label: 'Total Exams', icon: BookOpen, color: '#2E5CFF' },
+    { value: exams.length + '+', label: 'Total Exams', icon: BookOpen, color: '#2E5CFF' },
     { value: '2 Cr+', label: 'Aspirants Yearly', icon: Users, color: '#10B981' },
     { value: '100%', label: 'Free Resources', icon: Award, color: '#FF6B35' },
     { value: '24/7', label: 'Support Available', icon: Clock, color: '#8B5CF6' },
   ];
 
+  // Load exams
+  useEffect(() => {
+    setLoading(true);
+    const params: any = { page: 1, limit: 100, isActive: 'true', sort: '-popularity' };
+    if (selectedCategory !== 'all') params.category = selectedCategory;
+
+    apiClient.get('/exams', { params })
+      .then(({ data }) => {
+        setExams(data.data ?? []);
+      })
+      .catch(() => toast.error('Failed to load exams'))
+      .finally(() => setLoading(false));
+  }, [selectedCategory]);
+
   // Filter logic
   const filteredExams = exams.filter(exam => {
-    const matchesCategory = selectedCategory === 'all' || exam.category === selectedCategory;
     const matchesSearch = searchQuery === '' || 
       exam.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      exam.fullName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesLevel = selectedLevel === 'all' || exam.level.toLowerCase().includes(selectedLevel.toLowerCase());
+      exam.shortName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      exam.conductedBy.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesLevel = selectedLevel === 'all' || exam.examLevel.toLowerCase().includes(selectedLevel.toLowerCase());
     const matchesPopularity = selectedPopularity === 'all' || 
-      (selectedPopularity === 'popular' && exam.popular) ||
-      (selectedPopularity === 'trending' && exam.trending);
+      (selectedPopularity === 'popular' && exam.popularity > 50) ||
+      (selectedPopularity === 'trending' && exam.popularity > 80);
     
-    return matchesCategory && matchesSearch && matchesLevel && matchesPopularity;
+    return matchesSearch && matchesLevel && matchesPopularity;
   });
-
-  const getDifficultyColor = (difficulty: string) => {
-    switch(difficulty) {
-      case 'Easy': return '#10B981';
-      case 'Medium': return '#FF6B35';
-      case 'Hard': return '#DC2626';
-      default: return '#6B7280';
-    }
-  };
 
   return (
     <>
-      <Navbar />
-      <div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden pt-[124px]">
+      <div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden">
         {/* Grain Overlay */}
         <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-50 mix-blend-multiply">
           <div className="absolute inset-0 bg-noise"></div>
@@ -409,7 +191,9 @@ const AllExams = () => {
                 <div className="font-black text-sm mb-1" style={{ color: category.color }}>
                   {category.name}
                 </div>
-                <div className="text-xs text-gray-600 font-bold">{category.count} Exams</div>
+                <div className="text-xs text-gray-600 font-bold">
+                  {category.id === 'all' ? exams.length : exams.filter(e => e.category === category.id).length} Exams
+                </div>
               </button>
             ))}
           </div>
@@ -500,7 +284,11 @@ const AllExams = () => {
             </h3>
           </div>
 
-          {filteredExams.length === 0 ? (
+          {loading ? (
+            <div className="flex justify-center py-20">
+              <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+            </div>
+          ) : filteredExams.length === 0 ? (
             <div className="bg-white border-4 border-black rounded-xl p-12 text-center">
               <BookOpen className="w-16 h-16 mx-auto mb-4 text-gray-400" />
               <h3 className="text-2xl font-black text-black mb-2">No Exams Found</h3>
@@ -521,104 +309,100 @@ const AllExams = () => {
             </div>
           ) : (
             <div className="grid md:grid-cols-2 gap-6">
-              {filteredExams.map((exam) => (
-                <div
-                  key={exam.id}
-                  className="bg-white border-4 border-black rounded-xl p-6 hover:scale-102 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative"
-                >
-                  {/* Badges */}
-                  <div className="absolute -top-3 -right-3 flex gap-2">
-                    {exam.trending && (
-                      <div className="px-3 py-1 bg-red-500 text-white font-black text-xs rounded-full border-2 border-black rotate-12">
-                        🔥 TRENDING
+              {filteredExams.map((exam) => {
+                const categoryMeta = categories.find(c => c.id === exam.category) || categories[0];
+                const trending = exam.popularity > 80;
+                const popular = exam.popularity > 50;
+
+                return (
+                  <div
+                    key={exam._id}
+                    className="bg-white border-4 border-black rounded-xl p-6 hover:scale-102 transition-all duration-300 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative"
+                  >
+                    {/* Badges */}
+                    <div className="absolute -top-3 -right-3 flex gap-2">
+                      {trending && (
+                        <div className="px-3 py-1 bg-red-500 text-white font-black text-xs rounded-full border-2 border-black rotate-12">
+                          🔥 TRENDING
+                        </div>
+                      )}
+                      {popular && !trending && (
+                        <div className="px-3 py-1 bg-yellow-400 text-black font-black text-xs rounded-full border-2 border-black rotate-12">
+                          ⭐ POPULAR
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Header */}
+                    <div className="flex items-start gap-4 mb-4">
+                      <div 
+                        className="w-16 h-16 rounded-xl flex items-center justify-center text-3xl border-4 border-black flex-shrink-0"
+                        style={{ backgroundColor: categoryMeta.color + '20' }}
+                      >
+                        {categoryMeta.icon}
                       </div>
-                    )}
-                    {exam.popular && !exam.trending && (
-                      <div className="px-3 py-1 bg-yellow-400 text-black font-black text-xs rounded-full border-2 border-black rotate-12">
-                        ⭐ POPULAR
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="text-2xl font-black text-black">{exam.shortName}</h3>
+                        </div>
+                        <p className="text-sm text-gray-600 font-medium">{exam.name}</p>
                       </div>
-                    )}
-                  </div>
-
-                  {/* Header */}
-                  <div className="flex items-start gap-4 mb-4">
-                    <div 
-                      className="w-16 h-16 rounded-xl flex items-center justify-center text-3xl border-4 border-black flex-shrink-0"
-                      style={{ backgroundColor: exam.color + '20' }}
-                    >
-                      {exam.icon}
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-2xl font-black text-black">{exam.name}</h3>
-                        <span 
-                          className="px-2 py-1 text-white text-xs font-black rounded-full border-2 border-black"
-                          style={{ backgroundColor: getDifficultyColor(exam.difficulty) }}
-                        >
-                          {exam.difficulty}
-                        </span>
+
+                    {/* Description */}
+                    <p className="text-gray-700 font-medium mb-4 text-sm leading-relaxed">
+                      {exam.description}
+                    </p>
+
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                      <div className="p-3 bg-gray-50 border-2 border-black rounded-lg">
+                        <div className="text-xs text-gray-600 font-medium mb-1">Conducted By</div>
+                        <div className="text-sm font-black text-black truncate">{exam.conductedBy}</div>
                       </div>
-                      <p className="text-sm text-gray-600 font-medium">{exam.fullName}</p>
+                      <div className="p-3 bg-gray-50 border-2 border-black rounded-lg">
+                        <div className="text-xs text-gray-600 font-medium mb-1">Level</div>
+                        <div className="text-sm font-black text-black">{exam.examLevel}</div>
+                      </div>
+                      <div className="p-3 bg-gray-50 border-2 border-black rounded-lg">
+                        <div className="text-xs text-gray-600 font-medium mb-1">Total Marks</div>
+                        <div className="text-lg font-black text-black">{exam.examPattern.totalMarks}</div>
+                      </div>
+                      <div className="p-3 bg-gray-50 border-2 border-black rounded-lg">
+                        <div className="text-xs text-gray-600 font-medium mb-1">Duration</div>
+                        <div className="text-lg font-black text-black">{exam.examPattern.duration} min</div>
+                      </div>
+                    </div>
+
+                    {/* Resources */}
+                    <div className="flex items-center gap-4 mb-4 pb-4 border-b-2 border-gray-200">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-blue-600" />
+                        <span className="text-sm font-bold text-gray-700">{exam.examPattern.totalQuestions} Qs</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Award className="w-4 h-4 text-purple-600" />
+                        <span className="text-sm font-bold text-gray-700">{exam.examLevel}</span>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <button className="py-3 bg-white text-black font-black text-sm uppercase border-4 border-black hover:bg-gray-100 transition-all duration-200 flex items-center justify-center gap-2">
+                        <BookOpen className="w-4 h-4" />
+                        View Details
+                      </button>
+                      <button 
+                        className="py-3 text-white font-black text-sm uppercase border-4 border-black hover:opacity-90 transition-all duration-200 flex items-center justify-center gap-2"
+                        style={{ backgroundColor: categoryMeta.color }}
+                      >
+                        <Zap className="w-4 h-4" />
+                        Start Prep
+                      </button>
                     </div>
                   </div>
-
-                  {/* Description */}
-                  <p className="text-gray-700 font-medium mb-4 text-sm leading-relaxed">
-                    {exam.description}
-                  </p>
-
-                  {/* Stats Grid */}
-                  <div className="grid grid-cols-2 gap-3 mb-4">
-                    <div className="p-3 bg-gray-50 border-2 border-black rounded-lg">
-                      <div className="text-xs text-gray-600 font-medium mb-1">Posts</div>
-                      <div className="text-lg font-black text-black">{exam.posts}</div>
-                    </div>
-                    <div className="p-3 bg-gray-50 border-2 border-black rounded-lg">
-                      <div className="text-xs text-gray-600 font-medium mb-1">Aspirants</div>
-                      <div className="text-lg font-black text-black">{exam.aspirants}</div>
-                    </div>
-                    <div className="p-3 bg-gray-50 border-2 border-black rounded-lg">
-                      <div className="text-xs text-gray-600 font-medium mb-1">Avg Salary</div>
-                      <div className="text-lg font-black text-black">{exam.avgSalary}</div>
-                    </div>
-                    <div className="p-3 bg-gray-50 border-2 border-black rounded-lg">
-                      <div className="text-xs text-gray-600 font-medium mb-1">Exam Date</div>
-                      <div className="text-lg font-black text-black">{exam.examDate}</div>
-                    </div>
-                  </div>
-
-                  {/* Resources */}
-                  <div className="flex items-center gap-4 mb-4 pb-4 border-b-2 border-gray-200">
-                    <div className="flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-blue-600" />
-                      <span className="text-sm font-bold text-gray-700">{exam.pyqs} PYQs</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Target className="w-4 h-4 text-orange-600" />
-                      <span className="text-sm font-bold text-gray-700">{exam.mockTests} Mock Tests</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Award className="w-4 h-4 text-purple-600" />
-                      <span className="text-sm font-bold text-gray-700">{exam.level}</span>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <button className="py-3 bg-white text-black font-black text-sm uppercase border-4 border-black hover:bg-gray-100 transition-all duration-200 flex items-center justify-center gap-2">
-                      <BookOpen className="w-4 h-4" />
-                      View Details
-                    </button>
-                    <button 
-                      className="py-3 text-white font-black text-sm uppercase border-4 border-black hover:opacity-90 transition-all duration-200 flex items-center justify-center gap-2"
-                      style={{ backgroundColor: exam.color }}
-                    >
-                      <Zap className="w-4 h-4" />
-                      Start Prep
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </section>
@@ -686,7 +470,6 @@ const AllExams = () => {
           }
         `}</style>
       </div>
-      <Footer />
     </>
   );
 };

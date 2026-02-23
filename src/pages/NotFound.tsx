@@ -4,8 +4,6 @@ import {
   Home, Search, BookOpen, Trophy, FileText, ArrowRight,
   Compass, AlertCircle, TrendingUp, Zap
 } from 'lucide-react';
-import Navbar from './Navbar';
-import Footer from './Footer';
 
 const NotFound = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -63,7 +61,6 @@ const NotFound = () => {
 
   return (
     <>
-      <Navbar />
       <div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden">
         {/* Grain Overlay */}
         <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-50 mix-blend-multiply">
@@ -277,7 +274,6 @@ const NotFound = () => {
           }
         `}</style>
       </div>
-      <Footer />
     </>
   );
 };

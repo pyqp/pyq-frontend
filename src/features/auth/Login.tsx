@@ -1,63 +1,99 @@
-import { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Sparkles, CheckCircle, X } from 'lucide-react';
-import weblogo from '../../assets/images/pyqpb.png';
-import { Link } from 'react-router-dom';
+import { useState } from "react";
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  Sparkles,
+  CheckCircle,
+  X,
+  AlertCircle,
+} from "lucide-react";
+import weblogo from "../../assets/images/pyqpb.png";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import toast from "react-hot-toast";
 
 const Login = () => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // In Login.tsx, line 25-35:
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setApiError("");
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
+
+    try {
+      await login({ email: email.trim().toLowerCase(), password });
+
+      // Get the updated user from localStorage after login
+      const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
+
+      toast.success("Welcome back! 👋");
+
+      // Redirect based on role
+      if (loggedInUser.role === "admin") {
+        navigate("/admin", { replace: true });
+      } else {
+        navigate("/dashboard", { replace: true });
+      }
+    } catch (err: any) {
+      const resData = err.response?.data;
+      const fieldErrors = resData?.errors ?? [];
+      const msg =
+        fieldErrors.length > 0
+          ? fieldErrors.map((e: any) => e.message).join("  •  ")
+          : resData?.message ||
+            err.message ||
+            "Login failed. Please try again.";
+      setApiError(msg);
+      toast.error(resData?.message || "Login failed");
+    } finally {
       setIsLoading(false);
-      console.log('Login attempt:', { email, password, rememberMe });
-    }, 2000);
+    }
   };
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden flex items-center justify-center p-4">
-      {/* Grain Overlay */}
+      {/* Grain */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-50 mix-blend-multiply">
-        <div className="absolute inset-0 bg-noise"></div>
+        <div className="absolute inset-0 bg-noise" />
       </div>
 
-      {/* Close Button - Fixed Top Right */}
+      {/* Close */}
       <Link
         to="/"
-        className="fixed top-6 right-6 z-50 w-12 h-12 bg-black text-white border-4 border-black rounded-full flex items-center justify-center hover:bg-gray-900 transition-all duration-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 group"
+        className="fixed top-6 right-6 z-50 w-12 h-12 bg-black text-white border-4 border-black rounded-full flex items-center justify-center hover:bg-gray-900 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 group"
         title="Back to Home"
       >
         <X className="w-6 h-6 group-hover:rotate-90 transition-transform duration-200" />
       </Link>
 
-      {/* Animated Background */}
-      <div className="fixed inset-0 overflow-hidden">
-        <div className="floating-element absolute top-20 left-10 w-64 h-64 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full opacity-20 blur-3xl"></div>
-        <div className="floating-element-delayed absolute bottom-20 right-10 w-72 h-72 bg-gradient-to-br from-pink-500 to-orange-500 rounded-full opacity-20 blur-3xl"></div>
-        <div className="floating-element-slow absolute top-1/2 left-1/2 w-80 h-80 bg-gradient-to-br from-green-500 to-teal-500 rounded-full opacity-20 blur-3xl"></div>
+      {/* Animated blobs */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="floating-element absolute top-20 left-10 w-64 h-64 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full opacity-20 blur-3xl" />
+        <div className="floating-element-delayed absolute bottom-20 right-10 w-72 h-72 bg-gradient-to-br from-pink-500 to-orange-500 rounded-full opacity-20 blur-3xl" />
+        <div className="floating-element-slow absolute top-1/2 left-1/2 w-80 h-80 bg-gradient-to-br from-green-500 to-teal-500 rounded-full opacity-20 blur-3xl" />
       </div>
 
-      {/* Main Content */}
       <div className="relative z-10 w-full max-w-6xl">
         <div className="grid lg:grid-cols-2 gap-8 items-center">
-          {/* Left Column - Branding & Benefits */}
+          {/* ── Left: Branding ── */}
           <div className="hidden lg:block space-y-8">
-            {/* Logo */}
-            <div className="inline-block">
-              <img 
-                src={weblogo} 
-                alt="Logo" 
-                className="h-16 w-auto object-contain"
-              />
-            </div>
-
-            {/* Heading */}
+            <img
+              src={weblogo}
+              alt="Logo"
+              className="h-16 w-auto object-contain"
+            />
             <div>
               <h1 className="text-6xl md:text-7xl font-black text-black leading-[0.9] tracking-tighter mb-6">
                 WELCOME
@@ -67,87 +103,105 @@ const Login = () => {
                 </span>
               </h1>
               <p className="text-2xl text-gray-600 font-bold leading-relaxed">
-                Continue your journey to crack India's toughest competitive exams.
+                Continue your journey to crack India's toughest competitive
+                exams.
               </p>
             </div>
 
-            {/* Benefits */}
             <div className="space-y-4">
-              <div className="flex items-start gap-4 p-4 bg-white border-4 border-black rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 transition-all duration-200">
-                <div className="w-12 h-12 bg-green-400 rounded-full flex items-center justify-center border-2 border-black flex-shrink-0">
-                  <CheckCircle className="w-6 h-6 text-black" />
+              {[
+                {
+                  color: "bg-green-400",
+                  icon: CheckCircle,
+                  title: "100K+ Free PYQs",
+                  sub: "Access latest question papers instantly",
+                },
+                {
+                  color: "bg-blue-400",
+                  icon: Sparkles,
+                  title: "AI-Powered Analytics",
+                  sub: "Track your performance & improve",
+                },
+                {
+                  color: "bg-purple-400",
+                  icon: CheckCircle,
+                  title: "Mock Test Series",
+                  sub: "Real exam environment practice",
+                },
+              ].map(({ color, icon: Icon, title, sub }) => (
+                <div
+                  key={title}
+                  className="flex items-start gap-4 p-4 bg-white border-4 border-black rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 transition-all"
+                >
+                  <div
+                    className={`w-12 h-12 ${color} rounded-full flex items-center justify-center border-2 border-black flex-shrink-0`}
+                  >
+                    <Icon className="w-6 h-6 text-black" />
+                  </div>
+                  <div>
+                    <div className="font-black text-lg text-gray-900 mb-1">
+                      {title}
+                    </div>
+                    <div className="text-gray-600 text-sm">{sub}</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="font-black text-lg text-gray-900 mb-1">100K+ Free PYQs</div>
-                  <div className="text-gray-600 text-sm">Access latest question papers instantly</div>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 p-4 bg-white border-4 border-black rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 transition-all duration-200">
-                <div className="w-12 h-12 bg-blue-400 rounded-full flex items-center justify-center border-2 border-black flex-shrink-0">
-                  <Sparkles className="w-6 h-6 text-black" />
-                </div>
-                <div>
-                  <div className="font-black text-lg text-gray-900 mb-1">AI-Powered Analytics</div>
-                  <div className="text-gray-600 text-sm">Track your performance & improve</div>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 p-4 bg-white border-4 border-black rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 transition-all duration-200">
-                <div className="w-12 h-12 bg-purple-400 rounded-full flex items-center justify-center border-2 border-black flex-shrink-0">
-                  <CheckCircle className="w-6 h-6 text-black" />
-                </div>
-                <div>
-                  <div className="font-black text-lg text-gray-900 mb-1">Mock Test Series</div>
-                  <div className="text-gray-600 text-sm">Real exam environment practice</div>
-                </div>
-              </div>
+              ))}
             </div>
 
-            {/* Stats */}
             <div className="flex gap-8 pt-8 border-t-4 border-black">
-              <div>
-                <div className="text-4xl font-black text-black mb-1">250K+</div>
-                <div className="text-gray-600 font-bold text-sm uppercase">Active Users</div>
-              </div>
-              <div>
-                <div className="text-4xl font-black text-black mb-1">98%</div>
-                <div className="text-gray-600 font-bold text-sm uppercase">Success Rate</div>
-              </div>
-              <div>
-                <div className="text-4xl font-black text-black mb-1">50+</div>
-                <div className="text-gray-600 font-bold text-sm uppercase">Exams</div>
-              </div>
+              {[
+                ["250K+", "Active Users"],
+                ["98%", "Success Rate"],
+                ["50+", "Exams"],
+              ].map(([n, l]) => (
+                <div key={l}>
+                  <div className="text-4xl font-black text-black mb-1">{n}</div>
+                  <div className="text-gray-600 font-bold text-sm uppercase">
+                    {l}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Right Column - Login Form */}
+          {/* ── Right: Form ── */}
           <div className="relative">
-            {/* Mobile Logo */}
+            {/* Mobile header */}
             <div className="lg:hidden mb-8 text-center">
-              <img 
-                src={weblogo} 
-                alt="Logo" 
+              <img
+                src={weblogo}
+                alt="Logo"
                 className="h-12 w-auto object-contain mx-auto mb-4"
               />
               <h2 className="text-4xl font-black text-black">LOGIN</h2>
             </div>
 
-            <div className="bg-white border-4 border-black rounded-none shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-8 md:p-12 relative">
-              {/* Floating Badge */}
-              <div className="absolute -top-4 -right-4 px-4 py-2 bg-green-400 text-black font-black text-sm border-4 border-black rotate-12 shadow-lg">
+            <div className="bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-8 md:p-12 relative">
+              <div className="absolute -top-4 -right-4 px-4 py-2 bg-green-400 text-black font-black text-sm border-4 border-black rotate-12">
                 SECURE
               </div>
 
-              {/* Form Header - Desktop Only */}
               <div className="hidden lg:block mb-8">
-                <h2 className="text-4xl font-black text-black mb-2">Login to Account</h2>
-                <p className="text-gray-600 font-medium">Enter your credentials to continue</p>
+                <h2 className="text-4xl font-black text-black mb-2">
+                  Login to Account
+                </h2>
+                <p className="text-gray-600 font-medium">
+                  Enter your credentials to continue
+                </p>
               </div>
 
-              {/* Login Form */}
+              {/* Error banner */}
+              {apiError && (
+                <div className="mb-6 p-4 bg-red-50 border-4 border-red-500 flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+                  <p className="text-red-700 font-bold text-sm leading-relaxed">
+                    {apiError}
+                  </p>
+                </div>
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Email Field */}
+                {/* Email */}
                 <div>
                   <label className="block text-sm font-black uppercase tracking-wider text-gray-700 mb-2">
                     Email Address
@@ -157,15 +211,19 @@ const Login = () => {
                     <input
                       type="email"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="your@email.com"
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        setApiError("");
+                      }}
+                      placeholder="you@example.com"
                       required
+                      autoComplete="email"
                       className="w-full pl-12 pr-4 py-4 border-4 border-black focus:outline-none focus:border-blue-600 font-bold text-lg transition-colors"
                     />
                   </div>
                 </div>
 
-                {/* Password Field */}
+                {/* Password */}
                 <div>
                   <label className="block text-sm font-black uppercase tracking-wider text-gray-700 mb-2">
                     Password
@@ -173,24 +231,32 @@ const Login = () => {
                   <div className="relative">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <input
-                      type={showPassword ? 'text' : 'password'}
+                      type={showPassword ? "text" : "password"}
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        setApiError("");
+                      }}
                       placeholder="••••••••"
                       required
+                      autoComplete="current-password"
                       className="w-full pl-12 pr-12 py-4 border-4 border-black focus:outline-none focus:border-blue-600 font-bold text-lg transition-colors"
                     />
                     <button
                       type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-900 transition-colors"
+                      onClick={() => setShowPassword((s) => !s)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black transition-colors"
                     >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
                     </button>
                   </div>
                 </div>
 
-                {/* Remember Me & Forgot Password */}
+                {/* Remember + Forgot */}
                 <div className="flex items-center justify-between">
                   <label className="flex items-center gap-2 cursor-pointer group">
                     <div className="relative">
@@ -200,11 +266,11 @@ const Login = () => {
                         onChange={(e) => setRememberMe(e.target.checked)}
                         className="sr-only"
                       />
-                      <div className={`w-6 h-6 border-4 border-black transition-all duration-200 ${
-                        rememberMe ? 'bg-black' : 'bg-white'
-                      }`}>
+                      <div
+                        className={`w-6 h-6 border-4 border-black flex items-center justify-center transition-all ${rememberMe ? "bg-black" : "bg-white"}`}
+                      >
                         {rememberMe && (
-                          <CheckCircle className="w-4 h-4 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                          <CheckCircle className="w-3.5 h-3.5 text-white" />
                         )}
                       </div>
                     </div>
@@ -212,47 +278,47 @@ const Login = () => {
                       Remember me
                     </span>
                   </label>
-                  <Link to="/forgot-password" className="text-sm font-black text-blue-600 hover:text-blue-700 transition-colors uppercase">
+                  <Link
+                    to="/forgot-password"
+                    className="text-sm font-black text-blue-600 hover:text-blue-700 transition-colors uppercase"
+                  >
                     Forgot?
                   </Link>
                 </div>
 
-                {/* Submit Button */}
+                {/* Submit */}
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-4 bg-black text-white font-black text-xl uppercase border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-4 bg-black text-white font-black text-xl uppercase border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-x-0 disabled:translate-y-0 disabled:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
                 >
                   {isLoading ? (
                     <>
-                      <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin" />
                       Logging In...
                     </>
                   ) : (
                     <>
-                      Login
-                      <ArrowRight className="w-6 h-6" />
+                      Login <ArrowRight className="w-6 h-6" />
                     </>
                   )}
                 </button>
               </form>
 
-              {/* Sign Up Link */}
               <div className="mt-8 text-center p-4 bg-gray-50 border-4 border-black">
                 <p className="text-gray-700 font-medium">
-                  Don't have an account?{' '}
-                  <a href="/signup" className="font-black text-black underline hover:text-blue-600 transition-colors">
+                  Don't have an account?{" "}
+                  <Link
+                    to="/signup"
+                    className="font-black text-black underline hover:text-blue-600 transition-colors"
+                  >
                     Sign Up Free
-                  </a>
+                  </Link>
                 </p>
               </div>
-
-              {/* Trust Badge */}
-              <div className="mt-6 text-center">
-                <p className="text-xs text-gray-500 font-medium">
-                  🔒 Protected by 256-bit SSL encryption
-                </p>
-              </div>
+              <p className="mt-6 text-center text-xs text-gray-500 font-medium">
+                🔒 Protected by 256-bit SSL encryption
+              </p>
             </div>
           </div>
         </div>
@@ -260,49 +326,15 @@ const Login = () => {
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&display=swap');
-        
-        * {
-          font-family: 'Space Grotesk', sans-serif;
-        }
-
-        h1, h2, h3, .font-black {
-          font-family: 'Archivo Black', sans-serif;
-          letter-spacing: -0.02em;
-        }
-
-        /* Noise Texture */
-        .bg-noise {
-          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='4' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-          opacity: 0.5;
-        }
-
-        /* Floating Elements Animation */
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) translateX(0px); }
-          50% { transform: translateY(-30px) translateX(20px); }
-        }
-
-        @keyframes float-delayed {
-          0%, 100% { transform: translateY(0px) translateX(0px); }
-          50% { transform: translateY(30px) translateX(-20px); }
-        }
-
-        @keyframes float-slow {
-          0%, 100% { transform: translateY(0px) scale(1); }
-          50% { transform: translateY(-20px) scale(1.1); }
-        }
-
-        .floating-element {
-          animation: float 8s ease-in-out infinite;
-        }
-
-        .floating-element-delayed {
-          animation: float-delayed 10s ease-in-out infinite;
-        }
-
-        .floating-element-slow {
-          animation: float-slow 12s ease-in-out infinite;
-        }
+        * { font-family: 'Space Grotesk', sans-serif; }
+        h1, h2, h3, .font-black { font-family: 'Archivo Black', sans-serif; letter-spacing: -0.02em; }
+        .bg-noise { background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='4' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E"); opacity: 0.5; }
+        @keyframes float { 0%,100%{transform:translateY(0) translateX(0)} 50%{transform:translateY(-30px) translateX(20px)} }
+        @keyframes float-delayed { 0%,100%{transform:translateY(0) translateX(0)} 50%{transform:translateY(30px) translateX(-20px)} }
+        @keyframes float-slow { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-20px) scale(1.1)} }
+        .floating-element { animation: float 8s ease-in-out infinite; }
+        .floating-element-delayed { animation: float-delayed 10s ease-in-out infinite; }
+        .floating-element-slow { animation: float-slow 12s ease-in-out infinite; }
       `}</style>
     </div>
   );

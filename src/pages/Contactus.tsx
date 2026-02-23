@@ -4,15 +4,18 @@ import {
   Mail, Phone, MapPin, Clock, Send, User, MessageCircle,
   CheckCircle, AlertCircle, Calendar, Headphones, Globe,
   Facebook, Twitter, Instagram, Linkedin, Youtube,
-  HelpCircle, BookOpen, CreditCard, Trophy, Zap
+  HelpCircle, BookOpen, CreditCard, Trophy, Zap, Loader2
 } from 'lucide-react';
-import Navbar from './Navbar';
-import Footer from './Footer';
+import apiClient from '../api/Client';
+import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const ContactUs = () => {
+  const { user } = useAuth();
+
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
+    name: user?.name || '',
+    email: user?.email || '',
     subject: '',
     category: '',
     message: ''
@@ -66,13 +69,11 @@ const ContactUs = () => {
   const categories = [
     { value: '', label: 'Select a category' },
     { value: 'general', label: 'General Inquiry' },
-    { value: 'account', label: 'Account Issues' },
     { value: 'payment', label: 'Payment & Billing' },
-    { value: 'mock-tests', label: 'Mock Tests' },
-    { value: 'pyqs', label: 'Free PYQs' },
     { value: 'technical', label: 'Technical Support' },
-    { value: 'feedback', label: 'Feedback & Suggestions' },
-    { value: 'partnership', label: 'Business & Partnership' }
+    { value: 'exam', label: 'Mock Tests / Exam Issues' },
+    { value: 'refund', label: 'Refund Request' },
+    { value: 'feedback', label: 'Feedback & Suggestions' }
   ];
 
   const quickLinks = [
@@ -99,16 +100,28 @@ const ContactUs = () => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await apiClient.post('/contact', {
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        subject: formData.subject.trim(),
+        category: formData.category,
+        message: formData.message.trim(),
+      });
+
       setSubmitStatus('success');
       setFormData({ name: '', email: '', subject: '', category: '', message: '' });
+      toast.success('Message sent! We\'ll respond within 24 hours.');
       
       setTimeout(() => {
         setSubmitStatus('idle');
       }, 5000);
-    }, 2000);
+    } catch (err: any) {
+      setSubmitStatus('error');
+      toast.error(err.response?.data?.message ?? 'Failed to send. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -120,7 +133,6 @@ const ContactUs = () => {
 
   return (
     <>
-      <Navbar />
       <div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden">
         {/* Grain Overlay */}
         <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-50 mix-blend-multiply">
@@ -128,7 +140,7 @@ const ContactUs = () => {
         </div>
 
         {/* Hero Section */}
-        <section className="relative bg-black py-16 md:py-24 overflow-hidden mt-[124px]">
+        <section className="relative bg-black py-16 md:py-24 overflow-hidden">
           {/* Animated Background */}
           <div className="absolute inset-0 opacity-20">
             <div className="absolute inset-0 bg-grid-pattern"></div>
@@ -303,7 +315,7 @@ const ContactUs = () => {
                 >
                   {isSubmitting ? (
                     <>
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <Loader2 className="w-5 h-5 animate-spin" />
                       Sending...
                     </>
                   ) : (
@@ -411,9 +423,11 @@ const ContactUs = () => {
                 <div className="flex flex-wrap gap-3">
                   {socialLinks.map((social, idx) => (
                     <Link
-                          key={idx}
-                          className="w-14 h-14 rounded-full flex items-center justify-center border-4 border-black hover:scale-110 transition-all duration-300"
-                          style={{ backgroundColor: social.color + '20' }} to={social.link}                    >
+                      key={idx}
+                      to={social.link}
+                      className="w-14 h-14 rounded-full flex items-center justify-center border-4 border-black hover:scale-110 transition-all duration-300"
+                      style={{ backgroundColor: social.color + '20' }}
+                    >
                       <social.icon className="w-7 h-7" style={{ color: social.color }} />
                     </Link>
                   ))}
@@ -494,7 +508,6 @@ const ContactUs = () => {
           }
         `}</style>
       </div>
-      <Footer />
     </>
   );
 };
