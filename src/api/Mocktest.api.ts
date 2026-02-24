@@ -112,11 +112,16 @@ export interface MockTestListParams {
  * Output:  { attemptId, duration, questions, ..., isResumed }
  */
 function normaliseStartTest(raw: any): StartTestResponse {
+  console.log('📦 normaliseStartTest input:', raw);
+  
   // Handle both: direct flat shape (future-proof) and nested shape (current)
-  if (raw.attemptId) return raw as StartTestResponse;  // already flat
+  if (raw.attemptId) {
+    console.log('✅ Already flat format');
+    return raw as StartTestResponse;  // already flat
+  }
 
   const a = raw.attempt ?? {};
-  return {
+  const normalized = {
     attemptId:      a._id ?? '',
     attemptNumber:  a.attemptNumber ?? 1,
     startTime:      a.startTime ?? new Date().toISOString(),
@@ -127,6 +132,11 @@ function normaliseStartTest(raw: any): StartTestResponse {
     instructions:   raw.instructions ?? [],
     isResumed:      raw.isResumed ?? false,
   };
+  
+  console.log('📤 normaliseStartTest output:', normalized);
+  console.log('📊 Questions count:', normalized.questions.length);
+  
+  return normalized;
 }
 
 // ─── API ─────────────────────────────────────────────────────────────────────
@@ -146,10 +156,17 @@ export const mockTestApi = {
    */
   startTest: async (id: string): Promise<{ data: { success: true; data: StartTestResponse } }> => {
     const res = await apiClient.post<{ success: true; data: any }>(`/mock-tests/${id}/start`);
+    console.log('🔍 RAW BACKEND RESPONSE:', res.data);
+    console.log('🔍 res.data.data:', res.data.data);
+    
+    const normalized = normaliseStartTest(res.data.data);
+    
+    console.log('🔍 FINAL NORMALIZED:', normalized);
+    
     return {
       data: {
         success: true,
-        data: normaliseStartTest(res.data.data),
+        data: normalized,
       },
     };
   },

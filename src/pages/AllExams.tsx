@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom'; // ← ADDED
 import { 
   Search, Filter, X, BookOpen, Users, 
   TrendingUp, Award, FileText, Target, Zap,
@@ -386,19 +387,23 @@ const AllExams = () => {
                       </div>
                     </div>
 
-                    {/* Action Buttons */}
+                    {/* Action Buttons - UPDATED WITH ROUTING */}
                     <div className="grid grid-cols-2 gap-3">
-                      <button className="py-3 bg-white text-black font-black text-sm uppercase border-4 border-black hover:bg-gray-100 transition-all duration-200 flex items-center justify-center gap-2">
+                      <Link 
+                        to="/mock-tests"
+                        className="py-3 bg-white text-black font-black text-sm uppercase border-4 border-black hover:bg-gray-100 transition-all duration-200 flex items-center justify-center gap-2"
+                      >
                         <BookOpen className="w-4 h-4" />
-                        View Details
-                      </button>
-                      <button 
+                        Mock Tests
+                      </Link>
+                      <Link 
+                        to="/free-pyqs"
                         className="py-3 text-white font-black text-sm uppercase border-4 border-black hover:opacity-90 transition-all duration-200 flex items-center justify-center gap-2"
                         style={{ backgroundColor: categoryMeta.color }}
                       >
                         <Zap className="w-4 h-4" />
-                        Start Prep
-                      </button>
+                        Free PYQs
+                      </Link>
                     </div>
                   </div>
                 );
@@ -419,10 +424,13 @@ const AllExams = () => {
               We're constantly adding new exams. Contact us to request coverage for your target exam.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="px-10 py-5 bg-white text-black font-black text-xl rounded-none border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 transition-all duration-200 uppercase flex items-center justify-center gap-2">
+              <Link
+                to="/contact"
+                className="px-10 py-5 bg-white text-black font-black text-xl rounded-none border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 transition-all duration-200 uppercase flex items-center justify-center gap-2"
+              >
                 Request Exam
                 <ArrowRight className="w-6 h-6" />
-              </button>
+              </Link>
             </div>
           </div>
         </section>

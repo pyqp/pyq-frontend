@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   Target, CheckCircle, Brain, ChevronRight, Star, Shield, BarChart, Users,
   Trophy, Timer, FileText, Loader2
@@ -40,12 +40,16 @@ function getCategoryColor(category: string): string {
 
 const MockTests = () => {
   const { user } = useAuth();
+  const navigate = useNavigate(); // ← ADDED
   
   const [mockTests, setMockTests] = useState<MockTestSummary[]>([]);
   const [packages, setPackages] = useState<Package[]>([]);
   const [exams, setExams] = useState<Exam[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  
+  // Ref for scrolling to tests
+  const testsRef = useRef<HTMLDivElement>(null);
 
   // Load data
   useEffect(() => {
@@ -99,6 +103,15 @@ const MockTests = () => {
   const filteredTests = selectedCategory === 'all' 
     ? mockTests 
     : mockTests.filter(t => examCategoryMap[t.exam._id] === selectedCategory);
+
+  // Handler for category selection with scroll
+  const handleCategoryClick = (categoryId: string) => {
+    setSelectedCategory(categoryId);
+    // Scroll to tests section after a short delay to let state update
+    setTimeout(() => {
+      testsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
 
   const features = [
     {
@@ -252,89 +265,78 @@ const MockTests = () => {
           </div>
         ) : (
           <>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            {/* Compact grid categories */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
               <div
-                onClick={() => setSelectedCategory('all')}
-                className={`relative p-6 border-4 rounded-xl cursor-pointer transition-all duration-300 ${
+                onClick={() => handleCategoryClick('all')}
+                className={`p-4 border-4 rounded-xl cursor-pointer transition-all duration-300 ${
                   selectedCategory === 'all'
-                    ? 'border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] scale-105 bg-blue-50'
-                    : 'border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:scale-102 bg-white'
+                    ? 'border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] scale-105 bg-blue-50'
+                    : 'border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-white'
                 }`}
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="text-5xl">📚</div>
-                  <div className="text-right">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="text-3xl">📚</div>
+                  <div>
                     <div className="text-2xl font-black text-blue-600">{mockTests.length}</div>
-                    <div className="text-xs font-bold text-gray-600 uppercase">All Tests</div>
+                    <div className="text-xs font-bold text-gray-600 uppercase">Tests</div>
                   </div>
                 </div>
-                <h3 className="text-2xl font-black text-black mb-2">All Categories</h3>
-                <button className="w-full py-3 bg-black text-white font-black text-sm uppercase border-2 border-black hover:bg-white hover:text-black transition-all duration-200 flex items-center justify-center gap-2">
-                  View All
-                  <ChevronRight className="w-4 h-4" />
-                </button>
+                <h3 className="text-lg font-black text-black">All Categories</h3>
               </div>
 
               {examCategories.map((exam: any) => (
                 <div
                   key={exam.id}
-                  onClick={() => setSelectedCategory(exam.id)}
-                  className={`relative p-6 border-4 rounded-xl cursor-pointer transition-all duration-300 ${
+                  onClick={() => handleCategoryClick(exam.id)}
+                  className={`relative p-4 border-4 rounded-xl cursor-pointer transition-all duration-300 ${
                     selectedCategory === exam.id
-                      ? 'border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] scale-105'
-                      : 'border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:scale-102'
+                      ? 'border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] scale-105'
+                      : 'border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]'
                   }`}
                   style={{ backgroundColor: selectedCategory === exam.id ? exam.color + '20' : 'white' }}
                 >
                   {exam.popular && (
-                    <div className="absolute -top-3 -right-3 px-3 py-1 bg-red-500 text-white font-black text-xs rounded-full border-2 border-black rotate-12">
+                    <div className="absolute -top-2 -right-2 px-2 py-1 bg-red-500 text-white font-black text-xs rounded-full border-2 border-black">
                       HOT
                     </div>
                   )}
                   
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="text-5xl">{exam.icon}</div>
-                    <div className="text-right">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="text-3xl">{exam.icon}</div>
+                    <div>
                       <div className="text-2xl font-black" style={{ color: exam.color }}>{exam.tests}</div>
                       <div className="text-xs font-bold text-gray-600 uppercase">Tests</div>
                     </div>
                   </div>
 
-                  <h3 className="text-2xl font-black text-black mb-2">{exam.name}</h3>
+                  <h3 className="text-lg font-black text-black mb-2">{exam.name}</h3>
                   
-                  <div className="flex flex-wrap gap-2 mb-4">
+                  <div className="flex flex-wrap gap-1">
                     {exam.exams.slice(0, 2).map((subExam: string) => (
                       <span
                         key={subExam}
-                        className="px-2 py-1 bg-gray-100 border-2 border-black rounded-md text-xs font-bold"
+                        className="px-2 py-0.5 bg-gray-100 border border-black rounded text-xs font-bold truncate"
                       >
                         {subExam}
                       </span>
                     ))}
                     {exam.exams.length > 2 && (
-                      <span className="px-2 py-1 text-xs font-bold text-gray-600">
-                        +{exam.exams.length - 2} more
-                      </span>
+                      <span className="text-xs font-bold text-gray-600">+{exam.exams.length - 2}</span>
                     )}
                   </div>
-
-                  <button className="w-full py-3 bg-black text-white font-black text-sm uppercase border-2 border-black hover:bg-white hover:text-black transition-all duration-200 flex items-center justify-center gap-2">
-                    View Tests
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
                 </div>
               ))}
             </div>
 
-            {/* Test List */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Test List - FIXED: Removed nested Link issue */}
+            <div ref={testsRef} className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredTests.slice(0, 6).map((test) => {
                 const testCategory = examCategoryMap[test.exam._id] || 'General';
                 return (
-                  <Link
+                  <div
                     key={test._id}
-                    to={`/mock-tests/${test._id}`}
-                    className="bg-white border-4 border-black rounded-xl p-6 hover:scale-105 transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
+                    className="bg-white border-4 border-black rounded-xl p-6 transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
                   >
                     <div className="flex items-start justify-between mb-4">
                       <span className="px-3 py-1 bg-purple-100 border-2 border-purple-600 text-purple-800 text-xs font-black uppercase rounded-full">
@@ -363,10 +365,17 @@ const MockTests = () => {
                       </div>
                     </div>
 
-                    <button className="w-full py-3 bg-black text-white font-black text-sm uppercase border-2 border-black hover:bg-blue-600 transition-all">
-                      View Details →
+                    {/* FIXED: Using navigate() for more reliable navigation */}
+                    <button
+                      onClick={() => {
+                        console.log('Navigating to test:', test._id);
+                        navigate(`/mock-tests/${test._id}`);
+                      }}
+                      className="block w-full py-3 bg-black text-white font-black text-sm uppercase border-2 border-black hover:bg-blue-600 transition-all text-center cursor-pointer"
+                    >
+                      View Test →
                     </button>
-                  </Link>
+                  </div>
                 );
               })}
             </div>
@@ -599,6 +608,17 @@ const MockTests = () => {
 
         .floating-element-delayed {
           animation: float-delayed 10s ease-in-out infinite;
+        }
+
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .scrollbar-hide {
+          -ms-overflow-style: none;  /* IE and Edge */
+          scrollbar-width: none;  /* Firefox */
         }
       `}</style>
     </div>

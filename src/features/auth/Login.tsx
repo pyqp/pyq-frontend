@@ -62,6 +62,17 @@ const Login = () => {
     }
   };
 
+  // Check all possible locations
+  console.log("accessToken:", localStorage.getItem("accessToken"));
+  console.log("token:", localStorage.getItem("token"));
+  console.log("authToken:", localStorage.getItem("authToken"));
+  console.log(
+    "All localStorage:",
+    Object.keys(localStorage).map(
+      (key) => `${key}: ${localStorage.getItem(key)}`,
+    ),
+  );
+
   return (
     <div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden flex items-center justify-center p-4">
       {/* Grain */}
